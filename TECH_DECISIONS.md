@@ -1,67 +1,111 @@
 # Decisiones Técnicas — FinanzApp
 
+Registro de decisiones técnicas tomadas durante el desarrollo del proyecto. Cada sección explica el qué, por qué y las alternativas consideradas.
+
 ## 1. Persistencia
 
 **PostgreSQL + Neon + Prisma**
 
-- Neon ofrece tier gratuito generoso para PostgreSQL serverless.
-- Prisma como ORM para type-safety y migraciones.
-- PostgreSQL facilita queries complejas de reportería (agrupaciones, sumas, filtros por fecha).
-- Escalable a multi-usuario en el futuro.
+- **Decisión**: PostgreSQL serverless con Neon (tier gratuito) y Prisma como ORM.
+- **Alternativas descartadas**:
+  - SQLite + Turso: Más simple pero limitado para queries complejas de reportería.
+  - IndexedDB/localStorage (client-side): Sin dependencias externas pero se pierden datos entre dispositivos.
+- **Razón**: PostgreSQL facilita queries complejas (agrupaciones, sumas, filtros por fecha). Prisma da type-safety y migraciones. Neon es gratuito y serverless, compatible con Vercel.
 
 ## 2. Autenticación
 
-**NextAuth.js + GitHub Provider + Tabla de usuario**
+**NextAuth.js v5 + GitHub Provider + Tabla User**
 
-- Protege los datos al hostear en Vercel público.
-- GitHub como provider principal (puede extenderse a Google u otros).
-- Tabla `User` con perfil personalizable: foto, nombre, configuraciones.
-- NextAuth adapter de Prisma para persistir sesiones y cuentas en la BD.
+- **Decisión**: NextAuth con adapter de Prisma y GitHub como provider principal.
+- **Alternativas descartadas**:
+  - Sin auth: Inseguro si se hostea en Vercel público.
+  - Auth con contraseña local: Más fricción, menos seguro.
+- **Razón**: Mínimo esfuerzo, protege datos en deploy público. La tabla `User` permite perfil personalizable (foto, nombre, moneda). Extensible a otros providers (Google, etc.).
 
 ## 3. Moneda
 
 **Configurable sin conversión**
 
-- Campo `currency` en la configuración del usuario (default: MXN).
-- Formateo con `Intl.NumberFormat` según la moneda configurada.
-- Sin conversión automática entre monedas.
-- Cualquier persona que forkee el proyecto puede usar su moneda local.
+- **Decisión**: Campo `currency` en User (default: MXN). Formateo con `Intl.NumberFormat`.
+- **Alternativas descartadas**:
+  - Solo MXN hardcoded: Limita forks internacionales.
+  - Multi-moneda con conversión: Sobreingeniería para el caso de uso actual.
+- **Razón**: Cualquier persona que forkee puede usar su moneda local sin cambiar código.
 
 ## 4. UI
 
-**Tailwind CSS + shadcn/ui**
+**Tailwind CSS v4 + shadcn/ui (base-ui)**
 
-- Componentes accesibles y personalizables.
-- Tailwind para estilos utilitarios.
-- shadcn/ui no es dependencia, se copia al proyecto (control total).
+- **Decisión**: Tailwind para estilos utilitarios, shadcn/ui para componentes.
+- **Nota**: La versión actual de shadcn/ui usa `@base-ui/react` en vez de Radix. Esto implica:
+  - No existe `asChild` en Button. Usar `buttonVariants` con `<Link>` directamente.
+  - Los Selects controlados no generan hidden inputs automáticamente. Agregar `<input type="hidden">` explícitos.
+  - El componente `Button` tiene `"use client"`, por lo que `buttonVariants` se extrajo a un archivo separado (`button-variants.ts`) para usarse en Server Components.
+- **Fuente**: Geist + Geist Mono de Google Fonts, configurada vía `next/font`.
 
 ## 5. Testing
 
 **Vitest + React Testing Library**
 
-- Vitest para tests unitarios y de integración (rápido, compatible con Vite/Next).
-- React Testing Library para tests de componentes.
-- Archivos de test junto al código: `*.test.ts` / `*.test.tsx`.
+- **Decisión**: Vitest para unit/integración, React Testing Library para componentes.
+- **Configuración**:
+  - Archivo: `vitest.config.mts` (ESM, excluido del tsconfig de Next.js).
+  - Environment por defecto: `node` (para validaciones y lógica).
+  - Environment `jsdom`: Solo para tests de componentes (`src/components/**`, `src/app/**`).
+  - Pool: `threads` (evita problemas de ESM con `forks`).
+- **Razón**: Vitest es rápido y compatible con el ecosistema. La separación de environments evita problemas de ESM con dependencias de CSS.
 
 ## 6. Manejo de Estado
 
 **Server Components + Server Actions**
 
-- Priorizar Server Components y Server Actions de Next.js App Router.
-- Mínimo estado en cliente.
-- Agregar Zustand solo si surge necesidad real de estado global en cliente.
+- **Decisión**: Priorizar Server Components y Server Actions de Next.js App Router. Estado en cliente solo donde es necesario (formularios con campos dinámicos).
+- **Alternativas descartadas**:
+  - Zustand: No se ha necesitado hasta ahora. Se agregará si surge necesidad real.
+- **Razón**: Next.js App Router reduce la necesidad de estado global en cliente.
+
+## 7. Modelo de Tarjetas
+
+**Modelo unificado `Card` (crédito + débito)**
+
+- **Decisión**: Una sola tabla `Card` con campo `type` (CREDIT/DEBIT) en vez de dos tablas separadas.
+- **Alternativas descartadas**:
+  - Tablas separadas `CreditCard` y `DebitCard`: Duplicación de campos comunes, dos CRUDs.
+- **Razón**: Simplifica el código (un solo CRUD, un solo formulario). Los campos exclusivos de crédito (límite, corte, pago, tasa) son opcionales/nullable. El campo `network` (Visa/Mastercard/Amex) permite mostrar iconos visuales.
+
+## 8. Modelo de Ingresos
+
+**IncomeSource con tipos expandidos y frecuencia flexible**
+
+- **Decisión**: 9 tipos de ingreso, 8 frecuencias (incluyendo `ONE_TIME`), soporte para día del mes y día de la semana, campo `isVariable` para montos estimados.
+- **Razón**: Cubre casos reales como:
+  - Nómina quincenal (2 días de pago)
+  - Envíos Mercado Libre (semanal, miércoles)
+  - Aguinaldo (anual, 20 de diciembre)
+  - Caja de ahorro (semestral, enero y julio)
+  - Herencia/donación (ingreso único con fecha específica)
+
+## 9. Catálogo de Bancos
+
+**Lista estática de bancos mexicanos + opción "Otro"**
+
+- **Decisión**: Combobox con búsqueda usando los bancos más comunes en México. Opción "Otro" que despliega un input libre.
+- **Alternativas descartadas**:
+  - Input libre sin catálogo: Inconsistencia en nombres (BBVA vs bbva vs Bancomer).
+  - API externa de bancos: Dependencia innecesaria.
+- **Razón**: Balance entre consistencia y flexibilidad. El combobox permite búsqueda rápida y el input libre cubre bancos no listados.
 
 ## Resumen del Stack
 
-| Capa | Tecnología |
-|---|---|
-| Framework | Next.js 14+ (App Router) |
-| Lenguaje | TypeScript |
-| BD | PostgreSQL (Neon) |
-| ORM | Prisma |
-| Auth | NextAuth.js + GitHub |
-| UI | Tailwind CSS + shadcn/ui |
-| Validación | Zod |
-| Testing | Vitest + React Testing Library |
-| Deploy | Vercel |
-| IA (opcional) | OpenAI API |
+| Capa | Tecnología | Versión |
+|---|---|---|
+| Framework | Next.js (App Router) | 16 |
+| Lenguaje | TypeScript | 5+ |
+| BD | PostgreSQL (Neon) | — |
+| ORM | Prisma | 6 |
+| Auth | NextAuth.js + GitHub | v5 (beta) |
+| UI | Tailwind CSS + shadcn/ui | v4 / base-ui |
+| Validación | Zod | 3 |
+| Testing | Vitest + RTL | 4 |
+| Deploy | Vercel | — |
+| IA (opcional) | OpenAI API | — |
