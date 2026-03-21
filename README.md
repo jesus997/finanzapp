@@ -1,36 +1,34 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FinanzApp 💰
 
-## Getting Started
+Aplicación web de gestión de finanzas personales. Controla tus tarjetas de crédito, préstamos, gastos periódicos, ingresos y ahorro desde un solo lugar.
 
-First, run the development server:
+## Características
+
+- **Tarjetas de crédito y débito** — Fechas de corte, pago, límites y gastos vinculados
+- **Préstamos** — Bancarios, automotrices, Infonavit, hipotecarios con seguimiento de pagos
+- **Fuentes de ingreso** — Nómina, ingresos pasivos, activos con periodicidad
+- **Gastos periódicos** — Mensuales, quincenales, bimestrales con fecha inicio/fin y montos
+- **Calendario de pagos** — Vista organizada por fechas de cuánto pagar y a quién
+- **Apartados de ahorro** — Por cantidad fija o porcentaje de ingreso
+- **Dispersión automática** — Al registrar ingreso, distribuye automáticamente a pagos y ahorros
+- **Reportería** — Gasto por tarjeta, totales por periodo, balance general
+- **Integración IA (opcional)** — Categorización de gastos, recomendaciones de ahorro, detección de gastos hormiga vía OpenAI
+
+## Tech Stack
+
+- [Next.js](https://nextjs.org/) 14+ (App Router)
+- [TypeScript](https://www.typescriptlang.org/)
+- [Prisma](https://www.prisma.io/) + SQLite
+- [Tailwind CSS](https://tailwindcss.com/) + [shadcn/ui](https://ui.shadcn.com/)
+- Deploy en [Vercel](https://vercel.com/)
+
+## Desarrollo
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Licencia
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT
