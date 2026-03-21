@@ -61,3 +61,37 @@ Seguir los estándares de Next.js:
 - **`loading.tsx`**: Estados de carga por ruta con Suspense.
 - **API Routes / Server Actions**: Retornar respuestas estructuradas con status codes HTTP apropiados. No lanzar excepciones sin capturar.
 - **Validación**: Validar inputs tanto en cliente como en servidor. Usar Zod para schemas de validación.
+
+## Patrones del Proyecto
+
+### Server Actions
+- Ubicar en `src/lib/actions/` con un archivo por entidad (ej: `income-source.ts`, `card.ts`).
+- Siempre validar con Zod antes de escribir a BD.
+- Siempre verificar `userId` del session para seguridad.
+- Usar `revalidatePath()` después de mutaciones y `redirect()` para navegación.
+- Para eliminar con filtro compuesto (`id` + `userId`), usar `deleteMany` en vez de `delete`.
+
+### Validaciones Zod
+- Ubicar en `src/lib/validations/` con un archivo por entidad.
+- Cada archivo de validación debe tener su archivo de test junto a él (`*.test.ts`).
+- Exportar el schema y el tipo inferido.
+
+### Formularios
+- Los formularios son Client Components (`"use client"`).
+- Usar `form action={serverAction}` para envío.
+- **Importante**: Los Selects controlados (con `value` + `onValueChange`) de shadcn/base-ui no generan inputs en el FormData. Agregar `<input type="hidden">` explícitos para estos campos.
+- Reutilizar el mismo componente de formulario para crear y editar, recibiendo la entidad como prop opcional.
+
+### Serialización Server → Client
+- Prisma devuelve objetos `Decimal` y `Date` que no son serializables para Client Components.
+- Convertir `Decimal` a `number` con `Number()` y `Date` a `string` con `.toISOString()` antes de pasar como props.
+
+### Componentes UI
+- `buttonVariants` está en `src/components/ui/button-variants.ts` (sin `"use client"`) para poder usarse en Server Components.
+- El componente `Button` en `button.tsx` importa de `button-variants.ts`.
+- Para links con estilo de botón en Server Components, usar `<Link className={buttonVariants(...)}>`.
+- Para botones de submit en Server Components (ej: delete), usar `<button type="submit">` nativo en vez del componente `Button` de base-ui.
+
+### Constantes y Labels
+- Labels en español para la UI se centralizan en `src/lib/constants.ts`.
+- Catálogos (bancos, tipos, frecuencias) también van en constants.

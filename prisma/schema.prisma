@@ -22,8 +22,7 @@ model User {
   accounts        Account[]
   sessions        Session[]
   incomeSources   IncomeSource[]
-  creditCards     CreditCard[]
-  debitCards      DebitCard[]
+  cards           Card[]
   loans           Loan[]
   recurringExpenses RecurringExpense[]
   savingsFunds    SavingsFund[]
@@ -70,12 +69,18 @@ model VerificationToken {
 
 enum IncomeType {
   SALARY
+  BONUS
+  CHRISTMAS_BONUS
+  PROFIT_SHARING
+  SAVINGS_FUND
   PASSIVE
   ACTIVE
+  WINDFALL
   OTHER
 }
 
 enum Frequency {
+  ONE_TIME
   WEEKLY
   BIWEEKLY
   MONTHLY
@@ -104,52 +109,61 @@ enum SavingsType {
   PERCENTAGE
 }
 
+enum PayDayType {
+  DAY_OF_MONTH
+  DAY_OF_WEEK
+}
+
 model IncomeSource {
-  id        String     @id @default(cuid())
-  userId    String
-  name      String
-  type      IncomeType
-  amount    Decimal
-  frequency Frequency
-  payDay    Int
-  active    Boolean    @default(true)
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  id         String     @id @default(cuid())
+  userId     String
+  name       String
+  type       IncomeType
+  amount     Decimal
+  frequency  Frequency
+  payDayType PayDayType @default(DAY_OF_MONTH)
+  payDay     Int[]
+  payMonth   Int[]     @default([])
+  isVariable Boolean   @default(false)
+  oneTimeDate DateTime?
+  active     Boolean    @default(true)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
 
   user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  debitCards    DebitCard[]
   savingsFunds  SavingsFund[]
   distributions Distribution[]
 }
 
-model CreditCard {
-  id             String  @id @default(cuid())
-  userId         String
-  name           String
-  bank           String
-  lastFourDigits String
-  creditLimit    Decimal
-  cutOffDay      Int
-  paymentDay     Int
-  interestRate   Decimal @default(0)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+enum CardType {
+  CREDIT
+  DEBIT
 }
 
-model DebitCard {
-  id             String  @id @default(cuid())
+enum CardNetwork {
+  VISA
+  MASTERCARD
+  AMEX
+  OTHER
+}
+
+model Card {
+  id             String      @id @default(cuid())
   userId         String
   name           String
   bank           String
   lastFourDigits String
-  incomeSourceId String?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  type           CardType
+  network        CardNetwork @default(OTHER)
+  // Credit card only
+  creditLimit    Decimal?
+  cutOffDay      Int?
+  paymentDay     Int?
+  interestRate   Decimal?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
 
-  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  incomeSource IncomeSource? @relation(fields: [incomeSourceId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Loan {

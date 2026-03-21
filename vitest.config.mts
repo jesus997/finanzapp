@@ -8,9 +8,13 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export default defineConfig({
   plugins: [react()],
   test: {
-    environment: "jsdom",
-    setupFiles: ["./src/test/setup.ts"],
     include: ["src/**/*.test.{ts,tsx}"],
+    environmentMatchGlobs: [
+      ["src/components/**", "jsdom"],
+      ["src/app/**", "jsdom"],
+    ],
+    setupFiles: ["./src/test/setup.ts"],
+    pool: "threads",
   },
   resolve: {
     alias: {
