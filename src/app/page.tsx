@@ -37,6 +37,36 @@ export default async function Home() {
         >
           Tarjetas
         </Link>
+        <Link
+          href="/prestamos"
+          className={buttonVariants({ variant: "outline", className: "h-24 text-lg" })}
+        >
+          Préstamos
+        </Link>
+        <Link
+          href="/gastos"
+          className={buttonVariants({ variant: "outline", className: "h-24 text-lg" })}
+        >
+          Gastos periódicos
+        </Link>
+        <Link
+          href="/ahorro"
+          className={buttonVariants({ variant: "outline", className: "h-24 text-lg" })}
+        >
+          Apartados de ahorro
+        </Link>
+        <Link
+          href="/calendario"
+          className={buttonVariants({ variant: "outline", className: "h-24 text-lg" })}
+        >
+          Calendario de pagos
+        </Link>
+        <Link
+          href="/dispersiones"
+          className={buttonVariants({ variant: "outline", className: "h-24 text-lg" })}
+        >
+          Dispersiones
+        </Link>
       </div>
     </div>
   );

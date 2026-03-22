@@ -21,11 +21,18 @@ import { cn } from "@/lib/utils";
 interface Props {
   name: string;
   defaultValue?: string;
+  value?: string;
+  onValueChange?: (value: string) => void;
 }
 
-export function BankCombobox({ name, defaultValue }: Props) {
+export function BankCombobox({ name, defaultValue, value: controlledValue, onValueChange }: Props) {
   const [open, setOpen] = useState(false);
-  const [value, setValue] = useState(defaultValue ?? "");
+  const [internalValue, setInternalValue] = useState(defaultValue ?? "");
+  const value = controlledValue ?? internalValue;
+  const setValue = (v: string) => {
+    setInternalValue(v);
+    onValueChange?.(v);
+  };
   const [isCustom, setIsCustom] = useState(
     !!defaultValue && !MEXICAN_BANKS.includes(defaultValue as typeof MEXICAN_BANKS[number])
   );

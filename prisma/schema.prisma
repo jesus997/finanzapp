@@ -92,6 +92,7 @@ enum Frequency {
 
 enum LoanType {
   BANK
+  PAYROLL
   AUTO
   INFONAVIT
   MORTGAGE
@@ -171,6 +172,7 @@ model Loan {
   userId           String
   name             String
   type             LoanType
+  institution      String
   totalAmount      Decimal
   monthlyPayment   Decimal
   interestRate     Decimal  @default(0)
@@ -235,6 +237,7 @@ model DistributionDetail {
   distributionId  String
   destinationType String
   destinationId   String
+  groupId         String?
   amount          Decimal
 
   distribution Distribution @relation(fields: [distributionId], references: [id], onDelete: Cascade)

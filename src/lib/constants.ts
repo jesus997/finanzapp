@@ -66,6 +66,15 @@ export const CARD_NETWORK_LABELS: Record<string, string> = {
   OTHER: "Otra",
 };
 
+export const LOAN_TYPE_LABELS: Record<string, string> = {
+  BANK: "Bancario",
+  PAYROLL: "Nómina",
+  AUTO: "Automotriz",
+  INFONAVIT: "Infonavit",
+  MORTGAGE: "Hipotecario",
+  OTHER: "Otro",
+};
+
 export const MEXICAN_BANKS = [
   "BBVA",
   "Banorte",
@@ -76,6 +85,7 @@ export const MEXICAN_BANKS = [
   "Banco Azteca",
   "BanCoppel",
   "Inbursa",
+  "Infonavit",
   "Nu México",
   "Hey Banco",
   "Banregio",
@@ -86,3 +96,30 @@ export const MEXICAN_BANKS = [
   "American Express",
   "Costco Citibanamex",
 ] as const;
+
+export const PAYMENT_METHOD_TYPE_LABELS: Record<string, string> = {
+  CREDIT_CARD: "Tarjeta de crédito",
+  DEBIT_CARD: "Tarjeta de débito",
+  INCOME_SOURCE: "Fuente de ingreso",
+};
+
+export const EXPENSE_CATEGORY_LABELS: Record<string, string> = {
+  HOUSING: "Vivienda",
+  UTILITIES: "Servicios (luz, agua, gas, internet)",
+  SUBSCRIPTIONS: "Suscripciones",
+  INSURANCE: "Seguros",
+  TRANSPORTATION: "Transporte",
+  FOOD: "Alimentación",
+  EDUCATION: "Educación",
+  HEALTH: "Salud",
+  ENTERTAINMENT: "Entretenimiento",
+  PERSONAL: "Cuidado personal",
+  PETS: "Mascotas",
+  DONATIONS: "Donaciones",
+  OTHER: "Otro",
+};
+
+export const SAVINGS_TYPE_LABELS: Record<string, string> = {
+  FIXED_AMOUNT: "Monto fijo",
+  PERCENTAGE: "Porcentaje del ingreso",
+};
