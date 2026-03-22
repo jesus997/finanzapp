@@ -29,7 +29,7 @@ export function AmortizationTable({ schedule, paymentAmount }: Props) {
   return (
     <div className="space-y-3">
       <h2 className="text-lg font-semibold">Tabla de amortización</h2>
-      <div className="rounded-xl border overflow-auto">
+      <div className="rounded-xl border overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
         <Table>
           <TableHeader>
             <TableRow>

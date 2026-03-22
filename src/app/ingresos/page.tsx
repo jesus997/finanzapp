@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button-variants";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -9,7 +9,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { getIncomeSources, deleteIncomeSource } from "@/lib/actions/income-source";
 import { INCOME_TYPE_LABELS, FREQUENCY_LABELS, WEEKDAY_LABELS, MONTH_LABELS } from "@/lib/constants";
 
@@ -43,64 +42,105 @@ export default async function IncomePage() {
           No tienes fuentes de ingreso registradas.
         </p>
       ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Nombre</TableHead>
-              <TableHead>Tipo</TableHead>
-              <TableHead>Monto</TableHead>
-              <TableHead>Frecuencia</TableHead>
-              <TableHead>Día(s) de pago</TableHead>
-              <TableHead>Depósito en</TableHead>
-              <TableHead>Estado</TableHead>
-              <TableHead />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
+        <>
+          {/* Mobile: cards */}
+          <div className="grid gap-4 md:hidden">
             {sources.map((source) => (
-              <TableRow key={source.id}>
-                <TableCell className="font-medium">{source.name}</TableCell>
-                <TableCell>{INCOME_TYPE_LABELS[source.type]}</TableCell>
-                <TableCell>
-                  {source.isVariable && "~"}$
-                  {Number(source.amount).toLocaleString("es-MX", {
-                    minimumFractionDigits: 2,
-                  })}
-                </TableCell>
-                <TableCell>{FREQUENCY_LABELS[source.frequency]}</TableCell>
-                <TableCell>{formatPayDay(source)}</TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {source.depositCard
-                    ? `${source.depositCard.name} (••••${source.depositCard.lastFourDigits})`
-                    : "—"}
-                </TableCell>
-                <TableCell>
+              <div key={source.id} className="rounded-xl border p-4 space-y-2">
+                <div className="flex items-center justify-between">
+                  <p className="font-semibold">{source.name}</p>
                   <Badge variant={source.active ? "default" : "secondary"}>
                     {source.active ? "Activo" : "Inactivo"}
                   </Badge>
-                </TableCell>
-                <TableCell className="flex gap-2">
-                  <Link
-                    href={`/ingresos/${source.id}/editar`}
-                    className={buttonVariants({ variant: "outline", size: "sm" })}
-                  >
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Tipo</p>
+                    <p>{INCOME_TYPE_LABELS[source.type]}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Monto</p>
+                    <p>{source.isVariable && "~"}${Number(source.amount).toLocaleString("es-MX", { minimumFractionDigits: 2 })}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Frecuencia</p>
+                    <p>{FREQUENCY_LABELS[source.frequency]}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Día(s) de pago</p>
+                    <p>{formatPayDay(source)}</p>
+                  </div>
+                </div>
+                {source.depositCard && (
+                  <p className="text-xs text-muted-foreground">
+                    Depósito en: {source.depositCard.name} (••••{source.depositCard.lastFourDigits})
+                  </p>
+                )}
+                <div className="flex gap-2 pt-1">
+                  <Link href={`/ingresos/${source.id}/editar`} className={buttonVariants({ variant: "outline", size: "sm" })}>
                     Editar
                   </Link>
-                  <form
-                    action={async () => {
-                      "use server";
-                      await deleteIncomeSource(source.id);
-                    }}
-                  >
+                  <form action={async () => { "use server"; await deleteIncomeSource(source.id); }}>
                     <button type="submit" className="inline-flex h-7 items-center rounded-[min(var(--radius-md),12px)] border border-transparent bg-destructive/10 px-2.5 text-[0.8rem] font-medium text-destructive hover:bg-destructive/20">
                       Eliminar
                     </button>
                   </form>
-                </TableCell>
-              </TableRow>
+                </div>
+              </div>
             ))}
-          </TableBody>
-        </Table>
+          </div>
+
+          {/* Desktop: table */}
+          <div className="hidden md:block">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nombre</TableHead>
+                  <TableHead>Tipo</TableHead>
+                  <TableHead>Monto</TableHead>
+                  <TableHead>Frecuencia</TableHead>
+                  <TableHead>Día(s) de pago</TableHead>
+                  <TableHead>Depósito en</TableHead>
+                  <TableHead>Estado</TableHead>
+                  <TableHead />
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {sources.map((source) => (
+                  <TableRow key={source.id}>
+                    <TableCell className="font-medium">{source.name}</TableCell>
+                    <TableCell>{INCOME_TYPE_LABELS[source.type]}</TableCell>
+                    <TableCell>
+                      {source.isVariable && "~"}${Number(source.amount).toLocaleString("es-MX", { minimumFractionDigits: 2 })}
+                    </TableCell>
+                    <TableCell>{FREQUENCY_LABELS[source.frequency]}</TableCell>
+                    <TableCell>{formatPayDay(source)}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {source.depositCard
+                        ? `${source.depositCard.name} (••••${source.depositCard.lastFourDigits})`
+                        : "—"}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={source.active ? "default" : "secondary"}>
+                        {source.active ? "Activo" : "Inactivo"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="flex gap-2">
+                      <Link href={`/ingresos/${source.id}/editar`} className={buttonVariants({ variant: "outline", size: "sm" })}>
+                        Editar
+                      </Link>
+                      <form action={async () => { "use server"; await deleteIncomeSource(source.id); }}>
+                        <button type="submit" className="inline-flex h-7 items-center rounded-[min(var(--radius-md),12px)] border border-transparent bg-destructive/10 px-2.5 text-[0.8rem] font-medium text-destructive hover:bg-destructive/20">
+                          Eliminar
+                        </button>
+                      </form>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </>
       )}
     </div>
   );

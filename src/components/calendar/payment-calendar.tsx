@@ -60,6 +60,22 @@ function EventChip({ event }: { event: CalendarEvent }) {
   );
 }
 
+function EventListItem({ event }: { event: CalendarEvent }) {
+  const fmt = (n: number) => `$${n.toLocaleString("es-MX", { minimumFractionDigits: 2 })}`;
+
+  return (
+    <div className={`flex items-center justify-between rounded-lg px-3 py-2 ${EVENT_STYLES[event.type]}`}>
+      <div>
+        <p className="text-sm font-medium">{event.label}</p>
+        <p className="text-xs opacity-75">{EVENT_TYPE_LABELS[event.type]}</p>
+      </div>
+      {event.amount != null && (
+        <p className="text-sm font-semibold">{fmt(event.amount)}</p>
+      )}
+    </div>
+  );
+}
+
 export function PaymentCalendar({ initialYear, initialMonth, initialEvents, fetchEvents }: Props) {
   const [year, setYear] = useState(initialYear);
   const [month, setMonth] = useState(initialMonth);
@@ -90,6 +106,11 @@ export function PaymentCalendar({ initialYear, initialMonth, initialEvents, fetc
   const today = new Date();
   const isCurrentMonth = today.getFullYear() === year && today.getMonth() + 1 === month;
 
+  // Days that have events (for mobile list view)
+  const daysWithEvents = Object.keys(eventsByDay)
+    .map(Number)
+    .sort((a, b) => a - b);
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -104,7 +125,7 @@ export function PaymentCalendar({ initialYear, initialMonth, initialEvents, fetc
         </button>
       </div>
 
-      <div className="flex flex-wrap gap-3 text-xs">
+      <div className="flex flex-wrap gap-2 text-xs">
         {Object.entries(EVENT_TYPE_LABELS).map(([type, label]) => (
           <span key={type} className={`rounded px-2 py-0.5 ${EVENT_STYLES[type]}`}>
             {label}
@@ -112,7 +133,31 @@ export function PaymentCalendar({ initialYear, initialMonth, initialEvents, fetc
         ))}
       </div>
 
-      <div className={`grid grid-cols-7 gap-px rounded-xl border bg-muted overflow-hidden ${loading ? "opacity-50" : ""}`}>
+      {/* Mobile: list view */}
+      <div className={`md:hidden space-y-4 ${loading ? "opacity-50" : ""}`}>
+        {daysWithEvents.length === 0 ? (
+          <p className="text-sm text-muted-foreground">Sin eventos este mes.</p>
+        ) : (
+          daysWithEvents.map((day) => {
+            const isToday = isCurrentMonth && today.getDate() === day;
+            return (
+              <div key={day} className="space-y-2">
+                <p className={`text-sm font-semibold ${isToday ? "text-primary" : ""}`}>
+                  {isToday && "● "}Día {day}
+                </p>
+                <div className="space-y-1.5">
+                  {eventsByDay[day].map((e, idx) => (
+                    <EventListItem key={idx} event={e} />
+                  ))}
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      {/* Desktop: grid view */}
+      <div className={`hidden md:grid grid-cols-7 gap-px rounded-xl border bg-muted overflow-hidden ${loading ? "opacity-50" : ""}`}>
         {["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"].map((d) => (
           <div key={d} className="bg-background p-2 text-center text-xs font-medium text-muted-foreground">
             {d}
