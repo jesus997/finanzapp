@@ -6,11 +6,11 @@ Aplicación web open source para gestión de finanzas personales. Controla tus t
 
 - **Fuentes de ingreso** — Nómina, aguinaldo, bonos, PTU, caja de ahorro, ingresos pasivos/activos, extraordinarios. Soporta frecuencias desde única hasta anual, con días de pago por día del mes o día de la semana.
 - **Tarjetas** — Crédito y débito unificadas. Fecha de corte, pago, límite, tasa de interés. Soporte para Visa, Mastercard, Amex.
-- **Préstamos** — Bancarios, automotrices, Infonavit, hipotecarios *(próximamente)*
-- **Gastos periódicos** — Mensuales, quincenales, bimestrales con fecha inicio/fin *(próximamente)*
-- **Apartados de ahorro** — Por cantidad fija o porcentaje de ingreso *(próximamente)*
-- **Dispersión automática** — Al registrar ingreso, distribuye a pagos y ahorros *(próximamente)*
-- **Calendario de pagos** — Vista organizada por fechas *(próximamente)*
+- **Préstamos** — Bancarios, nómina, automotrices, Infonavit, hipotecarios. Barra de progreso visual.
+- **Gastos periódicos** — Mensuales, quincenales, bimestrales con fecha inicio/fin. 13 categorías predefinidas. Vinculados a tarjeta o fuente de ingreso.
+- **Apartados de ahorro** — Por cantidad fija o porcentaje de ingreso, vinculados a fuente de ingreso.
+- **Dispersión automática** — Al registrar ingreso, prorratea gastos y ahorros por cobro. Agrupa por tarjeta ("bolsas"). Soporte para revertir.
+- **Calendario de pagos** — Vista mensual con eventos de ingresos, tarjetas, préstamos y gastos. Navegación entre meses. Detalle al hacer click.
 - **Reportería** — Gasto por tarjeta, totales por periodo, balance general *(próximamente)*
 - **Integración IA (opcional)** — Categorización, recomendaciones, detección de gastos hormiga vía OpenAI *(próximamente)*
 
@@ -108,14 +108,24 @@ finanzapp/
 │   ├── app/                   # Rutas (Next.js App Router)
 │   │   ├── api/auth/          # API de autenticación
 │   │   ├── ingresos/          # CRUD fuentes de ingreso
-│   │   └── tarjetas/          # CRUD tarjetas
+│   │   ├── tarjetas/          # CRUD tarjetas
+│   │   ├── prestamos/         # CRUD préstamos
+│   │   ├── gastos/            # CRUD gastos periódicos
+│   │   ├── ahorro/            # CRUD apartados de ahorro
+│   │   ├── calendario/        # Vista calendario de pagos
+│   │   └── dispersiones/      # Dispersión automática
 │   ├── components/
 │   │   ├── ui/                # Componentes base (shadcn/ui)
 │   │   ├── income-source/     # Componentes de ingresos
 │   │   ├── card/              # Componentes de tarjetas
+│   │   ├── loan/              # Componentes de préstamos
+│   │   ├── recurring-expense/ # Componentes de gastos
+│   │   ├── savings-fund/      # Componentes de ahorro
+│   │   ├── calendar/          # Componentes de calendario
+│   │   ├── distribution/      # Componentes de dispersión
 │   │   └── navbar.tsx         # Navegación principal
 │   ├── lib/
-│   │   ├── actions/           # Server Actions (CRUD)
+│   │   ├── actions/           # Server Actions (CRUD + lógica)
 │   │   ├── validations/       # Schemas Zod + tests
 │   │   ├── auth.ts            # Configuración NextAuth
 │   │   ├── prisma.ts          # Singleton Prisma Client

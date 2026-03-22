@@ -93,7 +93,34 @@ Registro de decisiones técnicas tomadas durante el desarrollo del proyecto. Cad
 - **Alternativas descartadas**:
   - Input libre sin catálogo: Inconsistencia en nombres (BBVA vs bbva vs Bancomer).
   - API externa de bancos: Dependencia innecesaria.
-- **Razón**: Balance entre consistencia y flexibilidad. El combobox permite búsqueda rápida y el input libre cubre bancos no listados.
+- **Razón**: Balance entre consistencia y flexibilidad. El combobox permite búsqueda rápida y el input libre cubre bancos no listados. Se reutiliza en tarjetas y préstamos. Incluye Infonavit como institución.
+
+## 10. Dispersión con prorrateo por cobro
+
+**Prorrateo automático basado en frecuencia de ingreso**
+
+- **Decisión**: Al dispersar un ingreso, el sistema calcula cuántas veces al mes cobra el usuario (semanal=4, quincenal=2, mensual=1), convierte cada gasto a su equivalente mensual y divide entre los cobros.
+- **Alternativas descartadas**:
+  - Asignar montos manuales: Más flexible pero tedioso y propenso a errores.
+  - Dispersión solo para gastos vinculados a la fuente: Limita la utilidad real.
+- **Razón**: Refleja el flujo real de "apartar dinero de cada quincena para cubrir todos los compromisos del mes". Los gastos se agrupan por tarjeta ("bolsas") para saber cuánto separar para pagar cada tarjeta.
+
+## 11. Calendario de pagos con frecuencias
+
+**Cálculo de eventos respetando frecuencia de cada gasto**
+
+- **Decisión**: El calendario calcula si un gasto bimestral/trimestral/etc. cae en el mes actual usando la diferencia en meses desde la fecha de inicio y el intervalo de la frecuencia.
+- **Razón**: Evita mostrar gastos bimestrales todos los meses. Los gastos semanales iteran por día de la semana, los quincenales cada 14 días exactos desde la fecha de inicio.
+
+## 12. Categorías de gastos predefinidas
+
+**13 categorías estáticas**
+
+- **Decisión**: Categorías predefinidas en `constants.ts`: Vivienda, Servicios, Suscripciones, Seguros, Transporte, Alimentación, Educación, Salud, Entretenimiento, Cuidado personal, Mascotas, Donaciones, Otro.
+- **Alternativas descartadas**:
+  - Categorías libres: Inconsistencia en nombres.
+  - Categorización solo por IA: Dependencia de API key.
+- **Razón**: Cubre los casos más comunes. El campo es opcional, preparado para categorización automática por IA a futuro.
 
 ## Resumen del Stack
 

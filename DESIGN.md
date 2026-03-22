@@ -26,27 +26,29 @@
 - network: `VISA` | `MASTERCARD` | `AMEX` | `OTHER`
 - Solo crédito: creditLimit, cutOffDay, paymentDay, interestRate
 
-### Loan *(pendiente de implementar)*
+### Loan
 - id, userId, name
-- type: `BANK` | `AUTO` | `INFONAVIT` | `MORTGAGE` | `OTHER`
+- type: `BANK` | `PAYROLL` | `AUTO` | `INFONAVIT` | `MORTGAGE` | `OTHER`
+- institution (banco/institución emisora)
 - totalAmount, monthlyPayment, interestRate
 - startDate, endDate, paymentDay, remainingBalance
 
-### RecurringExpense *(pendiente de implementar)*
+### RecurringExpense
 - id, userId, name, description
 - amount, frequency, startDate, endDate
 - paymentMethodType: `CREDIT_CARD` | `DEBIT_CARD` | `INCOME_SOURCE`
 - paymentMethodId (referencia polimórfica)
-- category (opcional, para IA)
+- category: `HOUSING` | `UTILITIES` | `SUBSCRIPTIONS` | `INSURANCE` | `TRANSPORTATION` | `FOOD` | `EDUCATION` | `HEALTH` | `ENTERTAINMENT` | `PERSONAL` | `PETS` | `DONATIONS` | `OTHER`
 
-### SavingsFund *(pendiente de implementar)*
+### SavingsFund
 - id, userId, name
 - type: `FIXED_AMOUNT` | `PERCENTAGE`
 - value, incomeSourceId, accumulatedBalance
 
-### Distribution *(pendiente de implementar)*
+### Distribution
 - id, userId, incomeSourceId, date, totalAmount
-- details: [{destinationType, destinationId, amount}]
+- details: [{destinationType, destinationId, groupId?, amount}]
+- groupId vincula gastos a la tarjeta con la que se pagan (para vista "por bolsas")
 
 ## 2. Enums compartidos
 
@@ -71,11 +73,18 @@
 
 ## 4. Flujo de Dispersión Automática
 
-1. Usuario registra ingreso recibido (ej: nómina quincenal)
-2. Sistema busca reglas de dispersión vinculadas a esa fuente
-3. Calcula montos: gastos periódicos que toca pagar + apartados de ahorro
-4. Genera un resumen de dispersión para que el usuario confirme
-5. Registra la dispersión y actualiza saldos
+1. Usuario selecciona fuente de ingreso recibida (ej: nómina quincenal)
+2. Sistema calcula cuántas veces al mes cobra (semanal=4, quincenal=2, mensual=1)
+3. Para cada gasto periódico: convierte a equivalente mensual y divide entre cobros al mes
+4. Agrupa gastos por tarjeta de crédito/débito → "bolsas" por tarjeta
+5. Prorratea préstamos por cobro (pago mensual ÷ cobros al mes)
+6. Calcula ahorros vinculados (monto fijo o porcentaje del ingreso)
+7. Muestra resumen: bolsas por tarjeta + préstamos + ahorros + sobrante
+8. Usuario confirma → se registra la dispersión y se actualizan saldos de ahorro
+9. Dispersiones se pueden revertir (revierte saldos de ahorro)
+
+### Vista "Por bolsas"
+Cada tarjeta se muestra como una cajita con el total a apartar y el desglose de gastos que se pagan con ella. Esto permite saber cuánto dinero separar para pagar cada tarjeta cuando llegue su fecha de pago.
 
 ## 5. Módulo IA (Opcional)
 
@@ -93,11 +102,11 @@ Funciona sin IA por defecto. Al configurar API key de OpenAI:
 | `/` | ✅ | Dashboard (resumen, accesos rápidos) |
 | `/ingresos` | ✅ | CRUD fuentes de ingreso |
 | `/tarjetas` | ✅ | CRUD tarjetas crédito y débito |
-| `/prestamos` | 🔲 | CRUD préstamos |
-| `/gastos` | 🔲 | CRUD gastos periódicos |
-| `/calendario` | 🔲 | Vista calendario de pagos |
-| `/ahorro` | 🔲 | Gestión de apartados de ahorro |
-| `/dispersiones` | 🔲 | Historial y nueva dispersión |
+| `/prestamos` | ✅ | CRUD préstamos (bancario, nómina, automotriz, Infonavit, hipotecario) |
+| `/gastos` | ✅ | CRUD gastos periódicos con método de pago y categorías |
+| `/ahorro` | ✅ | Gestión de apartados de ahorro (monto fijo o porcentaje) |
+| `/calendario` | ✅ | Vista calendario mensual con eventos de todos los módulos |
+| `/dispersiones` | ✅ | Dispersión automática con prorrateo por cobro y agrupación por tarjeta |
 | `/reportes` | 🔲 | Reportería y gráficas |
 | `/ia` | 🔲 | Chat y herramientas IA |
 | `/configuracion` | 🔲 | API keys, preferencias |
