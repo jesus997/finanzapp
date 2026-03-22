@@ -51,11 +51,11 @@ export async function Navbar() {
           <form
             action={async () => {
               "use server";
-              await signIn("github");
+              await signIn();
             }}
           >
             <button className="text-sm hover:underline">
-              Iniciar sesión con GitHub
+              Iniciar sesión
             </button>
           </form>
         )}
