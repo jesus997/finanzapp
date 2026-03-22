@@ -5,6 +5,7 @@ const valid = {
   name: "Netflix",
   amount: "299",
   frequency: "MONTHLY",
+  payDay: "15",
   startDate: "2025-01-01",
   paymentMethodType: "CREDIT_CARD",
   paymentMethodId: "card-123",
@@ -25,7 +26,11 @@ describe("recurringExpenseSchema", () => {
   });
 
   it("rejects invalid frequency", () => {
-    expect(recurringExpenseSchema.safeParse({ ...valid, frequency: "DAILY" }).success).toBe(false);
+    expect(recurringExpenseSchema.safeParse({ ...valid, frequency: "INVALID" }).success).toBe(false);
+  });
+
+  it("accepts DAILY frequency", () => {
+    expect(recurringExpenseSchema.safeParse({ ...valid, frequency: "DAILY", payDay: "" }).success).toBe(true);
   });
 
   it("rejects empty paymentMethodId", () => {
@@ -52,5 +57,27 @@ describe("recurringExpenseSchema", () => {
       expect(typeof result.data.amount).toBe("number");
       expect(result.data.startDate).toBeInstanceOf(Date);
     }
+  });
+
+  it("requires 2 payDay values for BIWEEKLY", () => {
+    const result = recurringExpenseSchema.safeParse({ ...valid, frequency: "BIWEEKLY", payDay: "1,16" });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.payDay).toEqual([1, 16]);
+  });
+
+  it("rejects BIWEEKLY with only 1 payDay", () => {
+    const result = recurringExpenseSchema.safeParse({ ...valid, frequency: "BIWEEKLY", payDay: "1" });
+    expect(result.success).toBe(false);
+  });
+
+  it("requires 1 payDay for MONTHLY", () => {
+    const result = recurringExpenseSchema.safeParse({ ...valid, frequency: "MONTHLY", payDay: "15" });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.payDay).toEqual([15]);
+  });
+
+  it("allows empty payDay for WEEKLY", () => {
+    const result = recurringExpenseSchema.safeParse({ ...valid, frequency: "WEEKLY", payDay: "" });
+    expect(result.success).toBe(true);
   });
 });

@@ -140,10 +140,14 @@ export async function getCalendarEvents(year: number, month: number): Promise<Ca
     }
 
     if (freq === "BIWEEKLY") {
-      const startMs = new Date(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate()).getTime();
-      for (let d = 1; d <= daysInMonth; d++) {
-        const diffDays = Math.round((new Date(year, month - 1, d).getTime() - startMs) / 86400000);
-        if (diffDays >= 0 && diffDays % 14 === 0) events.push(ev(d));
+      if (exp.payDay.length === 2) {
+        for (const day of exp.payDay) events.push(ev(day));
+      } else {
+        const startMs = new Date(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate()).getTime();
+        for (let d = 1; d <= daysInMonth; d++) {
+          const diffDays = Math.round((new Date(year, month - 1, d).getTime() - startMs) / 86400000);
+          if (diffDays >= 0 && diffDays % 14 === 0) events.push(ev(d));
+        }
       }
       continue;
     }
@@ -152,7 +156,11 @@ export async function getCalendarEvents(year: number, month: number): Promise<Ca
     const step = interval[freq] ?? 1;
     if (monthsDiff % step !== 0) continue;
 
-    events.push(ev(start.getUTCDate()));
+    if (freq === "MONTHLY" && exp.payDay.length === 1) {
+      events.push(ev(exp.payDay[0]));
+    } else {
+      events.push(ev(start.getUTCDate()));
+    }
   }
 
   return events.sort((a, b) => a.day - b.day);

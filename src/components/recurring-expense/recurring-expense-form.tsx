@@ -18,7 +18,10 @@ import {
   EXPENSE_CATEGORY_LABELS,
 } from "@/lib/constants";
 import { createRecurringExpense, updateRecurringExpense } from "@/lib/actions/recurring-expense";
+import { EXPENSE_FREQUENCIES_WITH_PAYDAY, EXPECTED_PAYDAY_COUNT } from "@/lib/validations/recurring-expense";
 import type { PaymentMethodType, Frequency } from "@prisma/client";
+
+const DAYS_OF_MONTH = Array.from({ length: 31 }, (_, i) => i + 1);
 
 interface CardOption {
   id: string;
@@ -39,6 +42,7 @@ interface Props {
     description: string | null;
     amount: number;
     frequency: Frequency;
+    payDay: number[];
     startDate: string;
     endDate: string | null;
     paymentMethodType: PaymentMethodType;
@@ -52,6 +56,8 @@ interface Props {
 export function RecurringExpenseForm({ expense, cards, incomeSources }: Props) {
   const [methodType, setMethodType] = useState<string>(expense?.paymentMethodType ?? "CREDIT_CARD");
   const [methodId, setMethodId] = useState(expense?.paymentMethodId ?? "");
+  const [frequency, setFrequency] = useState<string>(expense?.frequency ?? "MONTHLY");
+  const [payDays, setPayDays] = useState<number[]>(expense?.payDay ?? []);
 
   const action = expense ? updateRecurringExpense.bind(null, expense.id) : createRecurringExpense;
 
@@ -69,10 +75,28 @@ export function RecurringExpenseForm({ expense, cards, incomeSources }: Props) {
     setMethodId("");
   };
 
+  const needsPayDay = EXPENSE_FREQUENCIES_WITH_PAYDAY.has(frequency);
+  const expectedCount = EXPECTED_PAYDAY_COUNT[frequency] ?? 0;
+
+  const handleFrequencyChange = (freq: string | null) => {
+    if (!freq) return;
+    setFrequency(freq);
+    setPayDays([]);
+  };
+
+  const handlePayDayChange = (index: number, value: string | null) => {
+    if (!value) return;
+    const newDays = [...payDays];
+    newDays[index] = Number(value);
+    setPayDays(newDays);
+  };
+
   return (
     <form action={action} className="space-y-4 max-w-md">
       <input type="hidden" name="paymentMethodType" value={methodType} />
       <input type="hidden" name="paymentMethodId" value={methodId ?? ""} />
+      <input type="hidden" name="frequency" value={frequency} />
+      <input type="hidden" name="payDay" value={payDays.join(",")} />
 
       <div className="space-y-2">
         <Label htmlFor="name">Nombre</Label>
@@ -110,9 +134,9 @@ export function RecurringExpenseForm({ expense, cards, incomeSources }: Props) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="frequency">Frecuencia</Label>
-          <Select name="frequency" defaultValue={expense?.frequency ?? "MONTHLY"}>
-            <SelectTrigger id="frequency">
+          <Label>Frecuencia</Label>
+          <Select value={frequency} onValueChange={handleFrequencyChange}>
+            <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -123,6 +147,29 @@ export function RecurringExpenseForm({ expense, cards, incomeSources }: Props) {
           </Select>
         </div>
       </div>
+
+      {needsPayDay && (
+        <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${expectedCount}, 1fr)` }}>
+          {Array.from({ length: expectedCount }, (_, i) => (
+            <div key={i} className="space-y-2">
+              <Label>Día de cobro {expectedCount > 1 ? i + 1 : ""}</Label>
+              <Select
+                value={payDays[i]?.toString() ?? ""}
+                onValueChange={(v) => handlePayDayChange(i, v)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Día" />
+                </SelectTrigger>
+                <SelectContent>
+                  {DAYS_OF_MONTH.map((d) => (
+                    <SelectItem key={d} value={d.toString()}>{d}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
@@ -148,9 +195,9 @@ export function RecurringExpenseForm({ expense, cards, incomeSources }: Props) {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="paymentMethodType">Tipo de método de pago</Label>
+        <Label>Tipo de método de pago</Label>
         <Select value={methodType} onValueChange={handleMethodTypeChange}>
-          <SelectTrigger id="paymentMethodType">
+          <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -162,14 +209,14 @@ export function RecurringExpenseForm({ expense, cards, incomeSources }: Props) {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="paymentMethodId">Método de pago</Label>
+        <Label>Método de pago</Label>
         {methodOptions.length === 0 ? (
           <p className="text-sm text-muted-foreground">
             No tienes {PAYMENT_METHOD_TYPE_LABELS[methodType]?.toLowerCase()}s registradas.
           </p>
         ) : (
           <Select value={methodId} onValueChange={(v) => setMethodId(v ?? "")}>
-            <SelectTrigger id="paymentMethodId">
+            <SelectTrigger>
               <SelectValue placeholder="Selecciona" />
             </SelectTrigger>
             <SelectContent>

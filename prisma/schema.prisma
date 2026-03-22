@@ -196,6 +196,7 @@ model RecurringExpense {
   description       String?
   amount            Decimal
   frequency         Frequency
+  payDay            Int[]             @default([])
   startDate         DateTime
   endDate           DateTime?
   paymentMethodType PaymentMethodType

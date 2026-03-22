@@ -16,12 +16,17 @@ export default async function EditRecurringExpensePage({
   if (!expense) notFound();
 
   const serialized = {
-    ...expense,
+    id: expense.id,
+    name: expense.name,
+    description: expense.description,
     amount: Number(expense.amount),
+    frequency: expense.frequency,
+    payDay: expense.payDay,
     startDate: expense.startDate.toISOString(),
     endDate: expense.endDate?.toISOString() ?? null,
-    createdAt: expense.createdAt.toISOString(),
-    updatedAt: expense.updatedAt.toISOString(),
+    paymentMethodType: expense.paymentMethodType,
+    paymentMethodId: expense.paymentMethodId,
+    category: expense.category,
   };
 
   return (
