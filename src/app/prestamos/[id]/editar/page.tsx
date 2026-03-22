@@ -13,15 +13,18 @@ export default async function EditLoanPage({
   if (!loan) notFound();
 
   const serialized = {
-    ...loan,
+    id: loan.id,
+    name: loan.name,
+    type: loan.type,
+    institution: loan.institution,
     totalAmount: Number(loan.totalAmount),
     monthlyPayment: Number(loan.monthlyPayment),
     interestRate: Number(loan.interestRate),
     remainingBalance: Number(loan.remainingBalance),
     startDate: loan.startDate.toISOString(),
     endDate: loan.endDate?.toISOString() ?? null,
-    createdAt: loan.createdAt.toISOString(),
-    updatedAt: loan.updatedAt.toISOString(),
+    cutOffDay: loan.cutOffDay,
+    paymentDueDay: loan.paymentDueDay,
   };
 
   return (
