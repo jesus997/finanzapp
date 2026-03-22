@@ -16,6 +16,7 @@ describe("calculateAmortization", () => {
     );
     const last = result.schedule[result.schedule.length - 1];
     expect(last.balance).toBe(0);
+    expect(result.insufficientPayment).toBe(false);
   });
 
   it("first month interest is totalAmount * monthlyRate", () => {
@@ -49,13 +50,15 @@ describe("calculateAmortization", () => {
     );
     expect(result.totalInterest).toBe(0);
     expect(result.schedule[0].principal).toBe(5000);
+    expect(result.insufficientPayment).toBe(false);
   });
 
-  it("does not loop infinitely when payment barely covers interest", () => {
+  it("flags insufficient payment and stops early", () => {
     const result = calculateAmortization(
-      1000000, 8500, 12, base.startDate, 1000000,
+      1000000, 8500, 12, new Date("2025-01-01"), 1000000,
     );
-    // monthlyRate=1%, interest=10000 > payment=8500 → should stop at 1200 months
-    expect(result.schedule.length).toBeLessThanOrEqual(1200);
+    // monthlyRate=1%, interest=10000 > payment=8500
+    expect(result.insufficientPayment).toBe(true);
+    expect(result.schedule.length).toBeLessThan(1200);
   });
 });

@@ -49,24 +49,37 @@ export default async function LoanDetailPage({
         </Link>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-xl border p-4">
-          <p className="text-xs text-muted-foreground">Monto total</p>
-          <p className="text-lg font-semibold">{fmt(totalAmount)}</p>
+      {amortization.insufficientPayment && (
+        <div className="rounded-xl border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
+          <p className="font-semibold">⚠️ El pago mensual no cubre los intereses</p>
+          <p>
+            Con una tasa del {interestRate}%, los intereses mensuales son {fmt(amortization.currentMonthInterest)},
+            pero el pago es de {fmt(monthlyPayment)}. El saldo crecerá cada mes.
+            Los totales proyectados solo reflejan lo pagado hasta hoy.
+          </p>
         </div>
-        <div className="rounded-xl border p-4">
-          <p className="text-xs text-muted-foreground">Total a pagar (con intereses)</p>
-          <p className="text-lg font-semibold">{fmt(amortization.totalPaid)}</p>
+      )}
+
+      {!amortization.insufficientPayment && (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-xl border p-4">
+            <p className="text-xs text-muted-foreground">Monto total</p>
+            <p className="text-lg font-semibold">{fmt(totalAmount)}</p>
+          </div>
+          <div className="rounded-xl border p-4">
+            <p className="text-xs text-muted-foreground">Total a pagar (con intereses)</p>
+            <p className="text-lg font-semibold">{fmt(amortization.totalPaid)}</p>
+          </div>
+          <div className="rounded-xl border p-4">
+            <p className="text-xs text-muted-foreground">Total intereses</p>
+            <p className="text-lg font-semibold text-destructive">{fmt(amortization.totalInterest)}</p>
+          </div>
+          <div className="rounded-xl border p-4">
+            <p className="text-xs text-muted-foreground">Saldo restante</p>
+            <p className="text-lg font-semibold">{fmt(remainingBalance)}</p>
+          </div>
         </div>
-        <div className="rounded-xl border p-4">
-          <p className="text-xs text-muted-foreground">Total intereses</p>
-          <p className="text-lg font-semibold text-destructive">{fmt(amortization.totalInterest)}</p>
-        </div>
-        <div className="rounded-xl border p-4">
-          <p className="text-xs text-muted-foreground">Saldo restante</p>
-          <p className="text-lg font-semibold">{fmt(remainingBalance)}</p>
-        </div>
-      </div>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-xl border p-4">

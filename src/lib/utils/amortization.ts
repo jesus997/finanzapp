@@ -15,6 +15,8 @@ export interface AmortizationSummary {
   principalPaidSoFar: number;
   currentMonthInterest: number;
   currentMonthPrincipal: number;
+  /** true when monthly payment doesn't cover interest */
+  insufficientPayment: boolean;
 }
 
 export function calculateAmortization(
@@ -25,6 +27,9 @@ export function calculateAmortization(
   remainingBalance: number,
 ): AmortizationSummary {
   const monthlyRate = annualRate / 12 / 100;
+  const firstMonthInterest = round2(totalAmount * monthlyRate);
+  const insufficientPayment = monthlyPayment <= firstMonthInterest && annualRate > 0;
+
   const schedule: AmortizationRow[] = [];
   let balance = totalAmount;
   let totalInterest = 0;
@@ -57,6 +62,9 @@ export function calculateAmortization(
       currentMonthInterest = interest;
       currentMonthPrincipal = principal;
     }
+
+    // Stop early if balance is growing (payment < interest)
+    if (insufficientPayment && month >= monthsElapsed + 1) break;
   }
 
   return {
@@ -67,5 +75,6 @@ export function calculateAmortization(
     principalPaidSoFar,
     currentMonthInterest,
     currentMonthPrincipal,
+    insufficientPayment,
   };
 }
