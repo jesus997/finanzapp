@@ -20,6 +20,34 @@ export async function getCards() {
   });
 }
 
+export async function getCardsWithExpenses() {
+  const userId = await getAuthUserId();
+  const [cards, expenses] = await Promise.all([
+    prisma.card.findMany({ where: { userId }, orderBy: { createdAt: "desc" } }),
+    prisma.recurringExpense.findMany({
+      where: { userId, paymentMethodType: { in: ["CREDIT_CARD", "DEBIT_CARD"] } },
+      select: { id: true, name: true, amount: true, frequency: true, paymentMethodId: true },
+    }),
+  ]);
+
+  const expensesByCard = new Map<string, typeof expenses>();
+  for (const exp of expenses) {
+    const list = expensesByCard.get(exp.paymentMethodId) ?? [];
+    list.push(exp);
+    expensesByCard.set(exp.paymentMethodId, list);
+  }
+
+  return cards.map((card) => ({
+    ...card,
+    expenses: (expensesByCard.get(card.id) ?? []).map((e) => ({
+      id: e.id,
+      name: e.name,
+      amount: Number(e.amount),
+      frequency: e.frequency,
+    })),
+  }));
+}
+
 export async function getCard(id: string) {
   const userId = await getAuthUserId();
   return prisma.card.findFirst({ where: { id, userId } });

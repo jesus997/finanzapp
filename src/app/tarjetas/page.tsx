@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button-variants";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { getCards, deleteCard } from "@/lib/actions/card";
+import { getCardsWithExpenses, deleteCard } from "@/lib/actions/card";
 import { CARD_TYPE_LABELS, CARD_NETWORK_LABELS } from "@/lib/constants";
+import { CardExpensesList } from "@/components/card/card-expenses-list";
 
 export default async function CardsPage() {
-  const cards = await getCards();
+  const cards = await getCardsWithExpenses();
 
   return (
     <div className="space-y-6">
@@ -65,6 +65,8 @@ export default async function CardsPage() {
                   </div>
                 </div>
               )}
+
+              <CardExpensesList expenses={card.expenses} />
 
               <div className="flex gap-2 pt-1">
                 <Link
