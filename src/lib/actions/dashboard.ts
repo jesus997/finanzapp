@@ -34,7 +34,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
   const year = now.getFullYear();
   const month = now.getMonth() + 1;
 
-  const [events, savingsFunds, loans] = await Promise.all([
+  const [events, savingsFunds, loans, dailyExpensesTotal] = await Promise.all([
     getCalendarEvents(year, month),
     prisma.savingsFund.findMany({
       where: { userId },
@@ -43,6 +43,10 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     prisma.loan.findMany({
       where: { userId },
       select: { remainingBalance: true },
+    }),
+    prisma.expense.aggregate({
+      where: { userId, date: { gte: new Date(year, month - 1, 1), lt: new Date(year, month, 1) } },
+      _sum: { amount: true },
     }),
   ]);
 
@@ -57,6 +61,8 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     else if (e.type === "expense") monthlyExpenses += e.amount;
     else if (e.type === "loan") monthlyLoans += e.amount;
   }
+
+  monthlyExpenses += Number(dailyExpensesTotal._sum.amount ?? 0);
 
   const projectedBalance = monthlyIncome - monthlyExpenses - monthlyLoans;
 

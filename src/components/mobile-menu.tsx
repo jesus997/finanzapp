@@ -8,6 +8,7 @@ const links = [
   { href: "/tarjetas", label: "Tarjetas" },
   { href: "/prestamos", label: "Préstamos" },
   { href: "/gastos", label: "Gastos" },
+  { href: "/gastos-diarios", label: "Gastos diarios" },
   { href: "/ahorro", label: "Ahorro" },
   { href: "/calendario", label: "Calendario" },
   { href: "/dispersiones", label: "Dispersiones" },

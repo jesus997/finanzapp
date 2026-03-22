@@ -18,6 +18,7 @@ export async function Navbar() {
               <Link href="/tarjetas" className="text-sm hover:underline">Tarjetas</Link>
               <Link href="/prestamos" className="text-sm hover:underline">Préstamos</Link>
               <Link href="/gastos" className="text-sm hover:underline">Gastos</Link>
+              <Link href="/gastos-diarios" className="text-sm hover:underline">Gastos diarios</Link>
               <Link href="/ahorro" className="text-sm hover:underline">Ahorro</Link>
               <Link href="/calendario" className="text-sm hover:underline">Calendario</Link>
               <Link href="/dispersiones" className="text-sm hover:underline">Dispersiones</Link>

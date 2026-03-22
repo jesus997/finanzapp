@@ -21,11 +21,20 @@ export interface CalendarEvent {
 export async function getCalendarEvents(year: number, month: number): Promise<CalendarEvent[]> {
   const userId = await getAuthUserId();
 
-  const [incomeSources, cards, loans, expenses] = await Promise.all([
+  const [incomeSources, cards, loans, expenses, dailyExpenses] = await Promise.all([
     prisma.incomeSource.findMany({ where: { userId, active: true } }),
     prisma.card.findMany({ where: { userId, type: "CREDIT" } }),
     prisma.loan.findMany({ where: { userId } }),
     prisma.recurringExpense.findMany({ where: { userId } }),
+    prisma.expense.findMany({
+      where: {
+        userId,
+        date: {
+          gte: new Date(year, month - 1, 1),
+          lt: new Date(year, month, 1),
+        },
+      },
+    }),
   ]);
 
   const events: CalendarEvent[] = [];
@@ -161,6 +170,17 @@ export async function getCalendarEvents(year: number, month: number): Promise<Ca
     } else {
       events.push(ev(start.getUTCDate()));
     }
+  }
+
+  // Daily expenses (one-time)
+  for (const exp of dailyExpenses) {
+    events.push({
+      day: exp.date.getUTCDate(),
+      label: exp.name,
+      type: "expense",
+      amount: Number(exp.amount),
+      detail: exp.description ?? "Gasto diario",
+    });
   }
 
   return events.sort((a, b) => a.day - b.day);

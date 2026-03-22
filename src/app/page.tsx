@@ -114,6 +114,9 @@ export default async function Home() {
           <Link href="/gastos" className={buttonVariants({ variant: "outline", className: "h-16" })}>
             Gastos
           </Link>
+          <Link href="/gastos-diarios" className={buttonVariants({ variant: "outline", className: "h-16" })}>
+            Gastos diarios
+          </Link>
           <Link href="/ahorro" className={buttonVariants({ variant: "outline", className: "h-16" })}>
             Ahorro
           </Link>
