@@ -19,6 +19,9 @@ export interface AmortizationSummary {
   insufficientPayment: boolean;
 }
 
+/** IVA rate applied to loan interest in Mexico */
+export const INTEREST_TAX_RATE = 0.16;
+
 export function calculateAmortization(
   totalAmount: number,
   monthlyPayment: number,
@@ -27,7 +30,8 @@ export function calculateAmortization(
   remainingBalance: number,
 ): AmortizationSummary {
   const monthlyRate = annualRate / 12 / 100;
-  const firstMonthInterest = round2(totalAmount * monthlyRate);
+  const taxMultiplier = 1 + INTEREST_TAX_RATE;
+  const firstMonthInterest = round2(totalAmount * monthlyRate * taxMultiplier);
   const insufficientPayment = monthlyPayment <= firstMonthInterest && annualRate > 0;
 
   const schedule: AmortizationRow[] = [];
@@ -47,7 +51,7 @@ export function calculateAmortization(
 
   while (balance > 0.01 && month < 1200) {
     month++;
-    const interest = round2(balance * monthlyRate);
+    const interest = round2(balance * monthlyRate * taxMultiplier);
     const principal = round2(Math.min(monthlyPayment - interest, balance));
     balance = round2(balance - principal);
     totalInterest = round2(totalInterest + interest);

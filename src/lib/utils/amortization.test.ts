@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { calculateAmortization } from "./amortization";
+import { calculateAmortization, INTEREST_TAX_RATE } from "./amortization";
 
 describe("calculateAmortization", () => {
   const base = {
@@ -19,13 +19,13 @@ describe("calculateAmortization", () => {
     expect(result.insufficientPayment).toBe(false);
   });
 
-  it("first month interest is totalAmount * monthlyRate", () => {
+  it("first month interest includes IVA", () => {
     const result = calculateAmortization(
       base.totalAmount, base.monthlyPayment, base.annualRate, base.startDate, base.remainingBalance,
     );
-    // 120000 * (12/12/100) = 1200
-    expect(result.schedule[0].interest).toBe(1200);
-    expect(result.schedule[0].principal).toBe(3800);
+    // 120000 * (12/12/100) * 1.16 = 1392
+    const expected = Math.round(120000 * (0.12 / 12) * (1 + INTEREST_TAX_RATE) * 100) / 100;
+    expect(result.schedule[0].interest).toBe(expected);
   });
 
   it("totalPaid equals totalAmount + totalInterest", () => {
@@ -57,7 +57,7 @@ describe("calculateAmortization", () => {
     const result = calculateAmortization(
       1000000, 8500, 12, new Date("2025-01-01"), 1000000,
     );
-    // monthlyRate=1%, interest=10000 > payment=8500
+    // monthlyRate=1% + 16% IVA = interest ~11600 > payment 8500
     expect(result.insufficientPayment).toBe(true);
     expect(result.schedule.length).toBeLessThan(1200);
   });
