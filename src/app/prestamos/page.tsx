@@ -78,6 +78,12 @@ export default async function LoansPage() {
 
                 <div className="flex gap-2 pt-1">
                   <Link
+                    href={`/prestamos/${loan.id}`}
+                    className={buttonVariants({ variant: "outline", size: "sm" })}
+                  >
+                    Amortización
+                  </Link>
+                  <Link
                     href={`/prestamos/${loan.id}/editar`}
                     className={buttonVariants({ variant: "outline", size: "sm" })}
                   >
