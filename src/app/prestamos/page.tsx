@@ -2,7 +2,7 @@ import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button-variants";
 import { Badge } from "@/components/ui/badge";
 import { getLoans, deleteLoan } from "@/lib/actions/loan";
-import { LOAN_TYPE_LABELS } from "@/lib/constants";
+import { LOAN_TYPE_LABELS, LOAN_PAYMENT_FREQUENCY_LABELS } from "@/lib/constants";
 
 export default async function LoansPage() {
   const loans = await getLoans();
@@ -69,9 +69,10 @@ export default async function LoansPage() {
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs">Pago mensual</p>
+                    <p className="text-xs">Pago</p>
                     <p className="font-medium text-foreground">
-                      ${Number(loan.monthlyPayment).toLocaleString("es-MX", { minimumFractionDigits: 2 })}
+                      ${Number(loan.paymentAmount).toLocaleString("es-MX", { minimumFractionDigits: 2 })}
+                      <span className="text-xs text-muted-foreground"> {LOAN_PAYMENT_FREQUENCY_LABELS[loan.paymentFrequency]?.toLowerCase()}</span>
                     </p>
                   </div>
                 </div>

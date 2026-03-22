@@ -12,6 +12,7 @@ export const INCOME_TYPE_LABELS: Record<string, string> = {
 
 export const FREQUENCY_LABELS: Record<string, string> = {
   ONE_TIME: "Único",
+  DAILY: "Diario",
   WEEKLY: "Semanal",
   BIWEEKLY: "Quincenal",
   MONTHLY: "Mensual",
@@ -73,6 +74,13 @@ export const LOAN_TYPE_LABELS: Record<string, string> = {
   INFONAVIT: "Infonavit",
   MORTGAGE: "Hipotecario",
   OTHER: "Otro",
+};
+
+export const LOAN_PAYMENT_FREQUENCY_LABELS: Record<string, string> = {
+  DAILY: "Diario",
+  WEEKLY: "Semanal",
+  BIWEEKLY: "Quincenal",
+  MONTHLY: "Mensual",
 };
 
 export const MEXICAN_BANKS = [

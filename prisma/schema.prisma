@@ -81,6 +81,7 @@ enum IncomeType {
 
 enum Frequency {
   ONE_TIME
+  DAILY
   WEEKLY
   BIWEEKLY
   MONTHLY
@@ -174,7 +175,8 @@ model Loan {
   type             LoanType
   institution      String
   totalAmount      Decimal
-  monthlyPayment   Decimal
+  paymentAmount    Decimal
+  paymentFrequency Frequency @default(MONTHLY)
   interestRate     Decimal  @default(0)
   startDate        DateTime
   endDate          DateTime?

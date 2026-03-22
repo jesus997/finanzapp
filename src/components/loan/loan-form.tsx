@@ -12,9 +12,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { BankCombobox } from "@/components/ui/bank-combobox";
-import { LOAN_TYPE_LABELS } from "@/lib/constants";
+import { LOAN_TYPE_LABELS, LOAN_PAYMENT_FREQUENCY_LABELS } from "@/lib/constants";
 import { createLoan, updateLoan } from "@/lib/actions/loan";
-import type { LoanType } from "@prisma/client";
+import type { LoanType, Frequency } from "@prisma/client";
 
 const DAYS_OF_MONTH = Array.from({ length: 31 }, (_, i) => i + 1);
 
@@ -25,7 +25,8 @@ interface Props {
     type: LoanType;
     institution: string;
     totalAmount: number;
-    monthlyPayment: number;
+    paymentAmount: number;
+    paymentFrequency: Frequency;
     interestRate: number;
     startDate: string;
     endDate: string | null;
@@ -117,29 +118,45 @@ export function LoanForm({ loan }: Props) {
 
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label htmlFor="monthlyPayment">Pago mensual</Label>
+          <Label htmlFor="paymentAmount">Monto del pago</Label>
           <Input
-            id="monthlyPayment"
-            name="monthlyPayment"
+            id="paymentAmount"
+            name="paymentAmount"
             type="number"
             step="0.01"
             required
-            defaultValue={loan?.monthlyPayment?.toString()}
+            defaultValue={loan?.paymentAmount?.toString()}
             placeholder="0.00"
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="interestRate">Tasa de interés (%)</Label>
-          <Input
-            id="interestRate"
-            name="interestRate"
-            type="number"
-            step="0.01"
-            defaultValue={loan?.interestRate?.toString() ?? "0"}
-            placeholder="0.00"
-          />
+          <Label htmlFor="paymentFrequency">Frecuencia de pago</Label>
+          <Select name="paymentFrequency" defaultValue={loan?.paymentFrequency ?? "MONTHLY"}>
+            <SelectTrigger id="paymentFrequency">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(LOAN_PAYMENT_FREQUENCY_LABELS).map(([value, label]) => (
+                <SelectItem key={value} value={value}>
+                  {label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="interestRate">Tasa de interés anual (%)</Label>
+        <Input
+          id="interestRate"
+          name="interestRate"
+          type="number"
+          step="0.01"
+          defaultValue={loan?.interestRate?.toString() ?? "0"}
+          placeholder="0.00"
+        />
       </div>
 
       <div className="space-y-2">

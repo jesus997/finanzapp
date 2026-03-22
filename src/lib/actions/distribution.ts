@@ -192,13 +192,19 @@ export async function calculateDistribution(incomeSourceId: string): Promise<Dis
   const cardGroups = [...groupMap.values()];
 
   // Loans prorated per paycheck
-  const loanItems: LoanLineItem[] = loans.map((loan) => ({
-    id: loan.id,
-    name: loan.name,
-    institution: loan.institution,
-    monthlyPayment: Number(loan.monthlyPayment),
-    perPaycheck: round2(Number(loan.monthlyPayment) / timesPerMonth),
-  }));
+  const loanItems: LoanLineItem[] = loans.map((loan) => {
+    const payment = Number(loan.paymentAmount);
+    // Convert to monthly equivalent based on loan payment frequency
+    const freqMultiplier: Record<string, number> = { DAILY: 30, WEEKLY: 4, BIWEEKLY: 2, MONTHLY: 1 };
+    const monthlyEquiv = payment * (freqMultiplier[loan.paymentFrequency] ?? 1);
+    return {
+      id: loan.id,
+      name: loan.name,
+      institution: loan.institution,
+      monthlyPayment: round2(monthlyEquiv),
+      perPaycheck: round2(monthlyEquiv / timesPerMonth),
+    };
+  });
 
   // Savings linked to this income source
   const savingsItems: SavingsLineItem[] = savings.map((fund) => {

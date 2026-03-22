@@ -35,7 +35,7 @@ export async function createLoan(formData: FormData) {
   }
 
   const { endDate, ...rest } = parsed.data;
-  const computedEndDate = endDate ?? estimateEndDate(rest.startDate, rest.remainingBalance, rest.monthlyPayment);
+  const computedEndDate = endDate ?? estimateEndDate(rest.startDate, rest.remainingBalance, rest.paymentAmount, rest.paymentFrequency);
 
   await prisma.loan.create({
     data: { ...rest, endDate: computedEndDate, userId },
@@ -55,7 +55,7 @@ export async function updateLoan(id: string, formData: FormData) {
   }
 
   const { endDate, ...rest } = parsed.data;
-  const computedEndDate = endDate ?? estimateEndDate(rest.startDate, rest.remainingBalance, rest.monthlyPayment);
+  const computedEndDate = endDate ?? estimateEndDate(rest.startDate, rest.remainingBalance, rest.paymentAmount, rest.paymentFrequency);
 
   await prisma.loan.update({
     where: { id, userId },

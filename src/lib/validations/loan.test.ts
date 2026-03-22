@@ -6,7 +6,8 @@ const valid = {
   type: "AUTO",
   institution: "BBVA",
   totalAmount: "350000",
-  monthlyPayment: "8500",
+  paymentAmount: "8500",
+  paymentFrequency: "MONTHLY",
   interestRate: "12.5",
   startDate: "2025-01-15",
   endDate: "2029-01-15",
@@ -36,9 +37,21 @@ describe("loanSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("rejects negative monthlyPayment", () => {
-    const result = loanSchema.safeParse({ ...valid, monthlyPayment: "-100" });
+  it("rejects negative paymentAmount", () => {
+    const result = loanSchema.safeParse({ ...valid, paymentAmount: "-100" });
     expect(result.success).toBe(false);
+  });
+
+  it("rejects invalid paymentFrequency", () => {
+    const result = loanSchema.safeParse({ ...valid, paymentFrequency: "ANNUAL" });
+    expect(result.success).toBe(false);
+  });
+
+  it("defaults paymentFrequency to MONTHLY", () => {
+    const { paymentFrequency: _, ...noFreq } = valid;
+    const result = loanSchema.safeParse(noFreq);
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.paymentFrequency).toBe("MONTHLY");
   });
 
   it("rejects negative interestRate", () => {
@@ -119,18 +132,19 @@ describe("loanSchema", () => {
 });
 
 describe("estimateEndDate", () => {
-  it("estimates end date from remaining balance and monthly payment", () => {
+  it("estimates end date for monthly payments", () => {
     const start = new Date("2025-01-15");
-    const result = estimateEndDate(start, 24000, 8000);
-    // 24000 / 8000 = 3 months
+    const result = estimateEndDate(start, 24000, 8000, "MONTHLY");
+    // 24000 / 8000 = 3 periods, 3/12 years = 3 months
     expect(result.getFullYear()).toBe(2025);
-    expect(result.getMonth()).toBe(3); // April (0-indexed)
+    expect(result.getMonth()).toBe(3); // April
   });
 
-  it("rounds up partial months", () => {
+  it("estimates end date for biweekly payments", () => {
     const start = new Date("2025-01-15");
-    const result = estimateEndDate(start, 25000, 8000);
-    // ceil(25000 / 8000) = 4 months
-    expect(result.getMonth()).toBe(4); // May
+    const result = estimateEndDate(start, 24000, 1000, "BIWEEKLY");
+    // 24 periods, 24/24 = 1 year = 12 months
+    expect(result.getFullYear()).toBe(2026);
+    expect(result.getMonth()).toBe(0); // January
   });
 });

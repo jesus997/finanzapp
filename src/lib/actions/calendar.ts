@@ -104,7 +104,7 @@ export async function getCalendarEvents(year: number, month: number): Promise<Ca
       day: loan.paymentDueDay,
       label: loan.name,
       type: "loan",
-      amount: Number(loan.monthlyPayment),
+      amount: Number(loan.paymentAmount),
       detail,
     });
   }

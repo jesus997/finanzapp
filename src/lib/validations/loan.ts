@@ -6,7 +6,8 @@ export const loanSchema = z
     type: z.enum(["BANK", "PAYROLL", "AUTO", "INFONAVIT", "MORTGAGE", "OTHER"]),
     institution: z.string().min(1, "La institución es requerida"),
     totalAmount: z.coerce.number().positive("El monto total debe ser mayor a 0"),
-    monthlyPayment: z.coerce.number().positive("El pago mensual debe ser mayor a 0"),
+    paymentAmount: z.coerce.number().positive("El monto del pago debe ser mayor a 0"),
+    paymentFrequency: z.enum(["DAILY", "WEEKLY", "BIWEEKLY", "MONTHLY"]).default("MONTHLY"),
     interestRate: z.coerce.number().min(0, "La tasa no puede ser negativa").default(0),
     startDate: z.coerce.date({ error: "La fecha de inicio es requerida" }),
     endDate: z.preprocess(
@@ -29,11 +30,14 @@ export const loanSchema = z
     path: ["remainingBalance"],
   });
 
-/** Estimate end date from remaining balance and monthly payment */
-export function estimateEndDate(startDate: Date, remainingBalance: number, monthlyPayment: number): Date {
-  const months = Math.ceil(remainingBalance / monthlyPayment);
+/** Estimate end date from remaining balance, payment amount and frequency */
+export function estimateEndDate(startDate: Date, remainingBalance: number, paymentAmount: number, paymentFrequency: string): Date {
+  const periodsPerYearMap: Record<string, number> = { DAILY: 360, WEEKLY: 52, BIWEEKLY: 24, MONTHLY: 12 };
+  const periods = Math.ceil(remainingBalance / paymentAmount);
+  const ppy = periodsPerYearMap[paymentFrequency] ?? 12;
+  const years = periods / ppy;
   const end = new Date(startDate);
-  end.setMonth(end.getMonth() + months);
+  end.setMonth(end.getMonth() + Math.ceil(years * 12));
   return end;
 }
 

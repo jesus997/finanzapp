@@ -19,10 +19,10 @@ const PAGE_SIZE = 12;
 
 interface Props {
   schedule: AmortizationRow[];
-  monthlyPayment: number;
+  paymentAmount: number;
 }
 
-export function AmortizationTable({ schedule, monthlyPayment }: Props) {
+export function AmortizationTable({ schedule, paymentAmount }: Props) {
   const [showAll, setShowAll] = useState(false);
   const rows = showAll ? schedule : schedule.slice(0, PAGE_SIZE);
 
@@ -33,7 +33,7 @@ export function AmortizationTable({ schedule, monthlyPayment }: Props) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-16">Mes</TableHead>
+              <TableHead className="w-16">Periodo</TableHead>
               <TableHead className="text-right">Pago</TableHead>
               <TableHead className="text-right">Interés</TableHead>
               <TableHead className="text-right">Capital</TableHead>
@@ -42,9 +42,9 @@ export function AmortizationTable({ schedule, monthlyPayment }: Props) {
           </TableHeader>
           <TableBody>
             {rows.map((row) => (
-              <TableRow key={row.month}>
-                <TableCell>{row.month}</TableCell>
-                <TableCell className="text-right">{fmt(monthlyPayment)}</TableCell>
+              <TableRow key={row.period}>
+                <TableCell>{row.period}</TableCell>
+                <TableCell className="text-right">{fmt(paymentAmount)}</TableCell>
                 <TableCell className="text-right text-destructive">{fmt(row.interest)}</TableCell>
                 <TableCell className="text-right text-green-600">{fmt(row.principal)}</TableCell>
                 <TableCell className="text-right">{fmt(row.balance)}</TableCell>
