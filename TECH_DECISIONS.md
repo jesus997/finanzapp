@@ -122,6 +122,40 @@ Registro de decisiones técnicas tomadas durante el desarrollo del proyecto. Cad
   - Categorización solo por IA: Dependencia de API key.
 - **Razón**: Cubre los casos más comunes. El campo es opcional, preparado para categorización automática por IA a futuro.
 
+## 13. Amortización con IVA sobre intereses
+
+**16% IVA sobre intereses de crédito**
+
+- **Decisión**: La tabla de amortización aplica 16% de IVA sobre el componente de interés de cada periodo, reflejando el impuesto mexicano sobre intereses de crédito.
+- **Alternativas descartadas**:
+  - Ignorar IVA: Montos no coincidirían con estados de cuenta reales.
+  - IVA configurable: Sobreingeniería para el caso de uso actual (solo México).
+- **Razón**: Los bancos mexicanos cobran IVA sobre intereses. Sin esto, la tabla de amortización no coincide con la realidad. La constante `INTEREST_TAX_RATE` permite ajustar si cambia la tasa.
+
+## 14. Frecuencia de pago variable en préstamos
+
+**paymentFrequency con soporte DAILY/WEEKLY/BIWEEKLY/MONTHLY**
+
+- **Decisión**: Los préstamos soportan 4 frecuencias de pago. La función `periodsPerYear()` mapea: DAILY=360, WEEKLY=52, BIWEEKLY=24, MONTHLY=12.
+- **Razón**: Préstamos de nómina suelen ser quincenales, microcréditos pueden ser semanales o diarios. La dispersión convierte el pago a equivalente mensual según la frecuencia.
+
+## 15. Estimación automática de fecha de fin de préstamo
+
+**endDate opcional con cálculo automático**
+
+- **Decisión**: Si el usuario no proporciona `endDate`, se estima con `estimateEndDate()` dividiendo `remainingBalance / paymentAmount` y sumando los periodos correspondientes a la frecuencia.
+- **Razón**: Muchos usuarios no conocen la fecha exacta de término. La estimación da una referencia útil sin requerir el dato.
+
+## 16. Dashboard con estadísticas rápidas
+
+**Resumen del mes + próximos eventos reutilizando calendario**
+
+- **Decisión**: El dashboard calcula totales mensuales (ingresos, gastos, préstamos) reutilizando `getCalendarEvents()` del módulo de calendario, más queries directas para ahorro acumulado y deuda total.
+- **Alternativas descartadas**:
+  - Queries separadas por entidad: Duplicación de lógica de cálculo de frecuencias.
+  - Cache/materialización: Sobreingeniería para el volumen actual.
+- **Razón**: Reutilizar el calendario evita duplicar la lógica de "qué eventos caen este mes". Los próximos 5 eventos desde hoy dan visibilidad inmediata al abrir la app.
+
 ## Resumen del Stack
 
 | Capa | Tecnología | Versión |

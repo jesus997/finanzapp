@@ -18,6 +18,7 @@
 - payDay: Int[] (días de pago, ej: [15, 30])
 - payMonth: Int[] (meses de pago, para frecuencias que lo requieren)
 - oneTimeDate: DateTime? (solo para frecuencia `ONE_TIME`)
+- depositCardId: String? (tarjeta de débito donde se deposita, opcional)
 - active
 
 ### Card
@@ -25,17 +26,23 @@
 - type: `CREDIT` | `DEBIT`
 - network: `VISA` | `MASTERCARD` | `AMEX` | `OTHER`
 - Solo crédito: creditLimit, cutOffDay, paymentDay, interestRate
+- Relación inversa: incomeSources (fuentes de ingreso que depositan en esta tarjeta)
 
 ### Loan
 - id, userId, name
 - type: `BANK` | `PAYROLL` | `AUTO` | `INFONAVIT` | `MORTGAGE` | `OTHER`
 - institution (banco/institución emisora)
-- totalAmount, monthlyPayment, interestRate
-- startDate, endDate, paymentDay, remainingBalance
+- totalAmount, paymentAmount, interestRate
+- paymentFrequency: Frequency (DAILY/WEEKLY/BIWEEKLY/MONTHLY, default: MONTHLY)
+- startDate, endDate? (opcional — se estima automáticamente si se omite)
+- cutOffDay: Int? (día de corte, opcional)
+- paymentDueDay: Int (día de vencimiento del pago)
+- remainingBalance
 
 ### RecurringExpense
 - id, userId, name, description
 - amount, frequency, startDate, endDate
+- payDay: Int[] (días específicos de cobro; BIWEEKLY requiere 2, MONTHLY requiere 1)
 - paymentMethodType: `CREDIT_CARD` | `DEBIT_CARD` | `INCOME_SOURCE`
 - paymentMethodId (referencia polimórfica)
 - category: `HOUSING` | `UTILITIES` | `SUBSCRIPTIONS` | `INSURANCE` | `TRANSPORTATION` | `FOOD` | `EDUCATION` | `HEALTH` | `ENTERTAINMENT` | `PERSONAL` | `PETS` | `DONATIONS` | `OTHER`
@@ -53,7 +60,7 @@
 ## 2. Enums compartidos
 
 ### Frequency
-`ONE_TIME` | `WEEKLY` | `BIWEEKLY` | `MONTHLY` | `BIMONTHLY` | `QUARTERLY` | `SEMIANNUAL` | `ANNUAL`
+`ONE_TIME` | `DAILY` | `WEEKLY` | `BIWEEKLY` | `MONTHLY` | `BIMONTHLY` | `QUARTERLY` | `SEMIANNUAL` | `ANNUAL`
 
 ### PayDayType
 `DAY_OF_MONTH` | `DAY_OF_WEEK`
@@ -63,6 +70,7 @@
 | Frecuencia | Campos requeridos | Ejemplo |
 |---|---|---|
 | ONE_TIME | oneTimeDate | 15 de junio de 2026 |
+| DAILY | — | Todos los días |
 | WEEKLY | payDay (día de semana 0-6) | Miércoles |
 | BIWEEKLY | payDay (2 días del mes) | 15, 30 |
 | MONTHLY | payDay (1 día del mes) | 15 |
@@ -71,13 +79,22 @@
 | SEMIANNUAL | payDay + payMonth (2 pares) | 15 de Ene, 15 de Jul |
 | ANNUAL | payDay + payMonth (1 par) | 20 de Dic |
 
-## 4. Flujo de Dispersión Automática
+## 4. Tabla de amortización de préstamos
+
+- Función `calculateAmortization()` en `src/lib/utils/amortization.ts`
+- Soporta frecuencias variables: DAILY (360 periodos/año), WEEKLY (52), BIWEEKLY (24), MONTHLY (12)
+- Aplica IVA del 16% sobre intereses (`INTEREST_TAX_RATE = 0.16`) — impuesto mexicano sobre intereses de crédito
+- Detecta pago insuficiente (pago < interés + IVA) — marca `insufficientPayment`, detiene cálculo y muestra advertencia
+- Página de detalle `/prestamos/[id]` con 8 tarjetas de resumen + tabla de amortización expandible
+- Componente `AmortizationTable` pagina a 12 filas con toggle "mostrar todo"
+
+## 5. Flujo de Dispersión Automática
 
 1. Usuario selecciona fuente de ingreso recibida (ej: nómina quincenal)
 2. Sistema calcula cuántas veces al mes cobra (semanal=4, quincenal=2, mensual=1)
 3. Para cada gasto periódico: convierte a equivalente mensual y divide entre cobros al mes
 4. Agrupa gastos por tarjeta de crédito/débito → "bolsas" por tarjeta
-5. Prorratea préstamos por cobro (pago mensual ÷ cobros al mes)
+5. Prorratea préstamos por cobro (pago mensual ÷ cobros al mes), convirtiendo según frecuencia del préstamo
 6. Calcula ahorros vinculados (monto fijo o porcentaje del ingreso)
 7. Muestra resumen: bolsas por tarjeta + préstamos + ahorros + sobrante
 8. Usuario confirma → se registra la dispersión y se actualizan saldos de ahorro
@@ -86,7 +103,31 @@
 ### Vista "Por bolsas"
 Cada tarjeta se muestra como una cajita con el total a apartar y el desglose de gastos que se pagan con ella. Esto permite saber cuánto dinero separar para pagar cada tarjeta cuando llegue su fecha de pago.
 
-## 5. Módulo IA (Opcional)
+## 6. Dashboard (Home)
+
+El home muestra estadísticas rápidas al usuario autenticado:
+
+- **Resumen del mes**: 4 tarjetas — ingresos, gastos, préstamos, balance proyectado (ingresos - gastos - préstamos)
+- **Ahorro y deuda**: 2 tarjetas — ahorro acumulado total, deuda total (suma de saldos restantes de préstamos)
+- **Próximos pagos e ingresos**: hasta 5 eventos desde hoy, con colores por tipo y monto
+- **Accesos rápidos**: grid de botones a cada módulo
+
+Los totales del mes se calculan reutilizando `getCalendarEvents()`. Ahorro y deuda son queries directas.
+
+## 7. Diseño Responsive
+
+La app está optimizada para uso en móvil:
+
+- **Navbar**: menú hamburguesa en mobile, links horizontales en desktop
+- **Listas (ingresos, gastos)**: cards en mobile (`md:hidden`), tabla en desktop (`hidden md:block`)
+- **Calendario**: vista de lista por día en mobile, grid de 7 columnas en desktop
+- **Tabla de amortización**: scroll horizontal en pantallas pequeñas
+- **Dashboard**: grid `grid-cols-2` en mobile, `lg:grid-cols-4` en desktop
+- **Tarjetas de préstamos/ahorro**: ya usan `sm:grid-cols-2`, se adaptan bien
+- **Formularios**: `max-w-md` funciona en mobile sin cambios
+- **Tarjetas (cards page)**: vista de gastos por tarjeta con toggle expandible
+
+## 8. Módulo IA (Opcional)
 
 Funciona sin IA por defecto. Al configurar API key de OpenAI:
 - Categorización automática de gastos
@@ -95,17 +136,18 @@ Funciona sin IA por defecto. Al configurar API key de OpenAI:
 - Chat para consultas sobre finanzas personales
 - Optimización de distribución de pagos
 
-## 6. Páginas de la App
+## 9. Páginas de la App
 
 | Ruta | Estado | Descripción |
 |---|---|---|
-| `/` | ✅ | Dashboard (resumen, accesos rápidos) |
-| `/ingresos` | ✅ | CRUD fuentes de ingreso |
-| `/tarjetas` | ✅ | CRUD tarjetas crédito y débito |
-| `/prestamos` | ✅ | CRUD préstamos (bancario, nómina, automotriz, Infonavit, hipotecario) |
-| `/gastos` | ✅ | CRUD gastos periódicos con método de pago y categorías |
+| `/` | ✅ | Dashboard con estadísticas, próximos eventos y accesos rápidos |
+| `/ingresos` | ✅ | CRUD fuentes de ingreso con tarjeta de depósito opcional |
+| `/tarjetas` | ✅ | CRUD tarjetas crédito y débito, vista de gastos por tarjeta |
+| `/prestamos` | ✅ | CRUD préstamos con frecuencia de pago variable |
+| `/prestamos/[id]` | ✅ | Detalle con tabla de amortización y resumen |
+| `/gastos` | ✅ | CRUD gastos periódicos con método de pago, categorías y días de cobro |
 | `/ahorro` | ✅ | Gestión de apartados de ahorro (monto fijo o porcentaje) |
-| `/calendario` | ✅ | Vista calendario mensual con eventos de todos los módulos |
+| `/calendario` | ✅ | Vista calendario mensual/lista con eventos de todos los módulos |
 | `/dispersiones` | ✅ | Dispersión automática con prorrateo por cobro y agrupación por tarjeta |
 | `/reportes` | 🔲 | Reportería y gráficas |
 | `/ia` | 🔲 | Chat y herramientas IA |

@@ -95,3 +95,11 @@ Seguir los estándares de Next.js:
 ### Constantes y Labels
 - Labels en español para la UI se centralizan en `src/lib/constants.ts`.
 - Catálogos (bancos, tipos, frecuencias) también van en constants.
+
+### Diseño Responsive
+- La app se usa principalmente en móvil — el diseño responsive es crítico.
+- Patrón para listas: `<div className="grid gap-4 md:hidden">` para cards en mobile, `<div className="hidden md:block">` para tablas en desktop.
+- Navbar: menú hamburguesa en mobile (`md:hidden`), links horizontales en desktop (`hidden md:flex`).
+- Grids de estadísticas: `grid-cols-2` en mobile, `lg:grid-cols-4` en desktop.
+- Formularios: `max-w-md` funciona en ambos tamaños sin cambios.
+- Tablas anchas (amortización): `overflow-x-auto` con márgenes negativos en mobile.

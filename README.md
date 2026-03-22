@@ -4,13 +4,15 @@ Aplicación web open source para gestión de finanzas personales. Controla tus t
 
 ## Características
 
-- **Fuentes de ingreso** — Nómina, aguinaldo, bonos, PTU, caja de ahorro, ingresos pasivos/activos, extraordinarios. Soporta frecuencias desde única hasta anual, con días de pago por día del mes o día de la semana.
-- **Tarjetas** — Crédito y débito unificadas. Fecha de corte, pago, límite, tasa de interés. Soporte para Visa, Mastercard, Amex.
-- **Préstamos** — Bancarios, nómina, automotrices, Infonavit, hipotecarios. Barra de progreso visual.
-- **Gastos periódicos** — Mensuales, quincenales, bimestrales con fecha inicio/fin. 13 categorías predefinidas. Vinculados a tarjeta o fuente de ingreso.
+- **Dashboard** — Resumen del mes (ingresos, gastos, préstamos, balance proyectado), ahorro acumulado, deuda total, próximos pagos e ingresos.
+- **Fuentes de ingreso** — Nómina, aguinaldo, bonos, PTU, caja de ahorro, ingresos pasivos/activos, extraordinarios. Soporta frecuencias desde única hasta anual, con días de pago por día del mes o día de la semana. Vinculación opcional a tarjeta de depósito.
+- **Tarjetas** — Crédito y débito unificadas. Fecha de corte, pago, límite, tasa de interés. Soporte para Visa, Mastercard, Amex. Vista de gastos vinculados por tarjeta con toggle expandible.
+- **Préstamos** — Bancarios, nómina, automotrices, Infonavit, hipotecarios. Frecuencia de pago variable (diario, semanal, quincenal, mensual). Tabla de amortización con IVA sobre intereses. Fecha de fin estimada automáticamente si se omite. Barra de progreso visual.
+- **Gastos periódicos** — Mensuales, quincenales, bimestrales con fecha inicio/fin. 13 categorías predefinidas. Días de cobro específicos. Vinculados a tarjeta o fuente de ingreso.
 - **Apartados de ahorro** — Por cantidad fija o porcentaje de ingreso, vinculados a fuente de ingreso.
 - **Dispersión automática** — Al registrar ingreso, prorratea gastos y ahorros por cobro. Agrupa por tarjeta ("bolsas"). Soporte para revertir.
-- **Calendario de pagos** — Vista mensual con eventos de ingresos, tarjetas, préstamos y gastos. Navegación entre meses. Detalle al hacer click.
+- **Calendario de pagos** — Vista mensual (grid en desktop, lista en móvil) con eventos de ingresos, tarjetas, préstamos y gastos. Navegación entre meses. Detalle al hacer click.
+- **Diseño responsive** — Optimizado para uso en móvil con menú hamburguesa, cards en mobile y tablas en desktop.
 - **Reportería** — Gasto por tarjeta, totales por periodo, balance general *(próximamente)*
 - **Integración IA (opcional)** — Categorización, recomendaciones, detección de gastos hormiga vía OpenAI *(próximamente)*
 
@@ -109,7 +111,7 @@ finanzapp/
 │   │   ├── api/auth/          # API de autenticación
 │   │   ├── ingresos/          # CRUD fuentes de ingreso
 │   │   ├── tarjetas/          # CRUD tarjetas
-│   │   ├── prestamos/         # CRUD préstamos
+│   │   ├── prestamos/         # CRUD préstamos + detalle con amortización
 │   │   ├── gastos/            # CRUD gastos periódicos
 │   │   ├── ahorro/            # CRUD apartados de ahorro
 │   │   ├── calendario/        # Vista calendario de pagos
@@ -118,23 +120,31 @@ finanzapp/
 │   │   ├── ui/                # Componentes base (shadcn/ui)
 │   │   ├── income-source/     # Componentes de ingresos
 │   │   ├── card/              # Componentes de tarjetas
-│   │   ├── loan/              # Componentes de préstamos
+│   │   ├── loan/              # Componentes de préstamos y amortización
 │   │   ├── recurring-expense/ # Componentes de gastos
 │   │   ├── savings-fund/      # Componentes de ahorro
-│   │   ├── calendar/          # Componentes de calendario
+│   │   ├── calendar/          # Componentes de calendario (grid + lista)
 │   │   ├── distribution/      # Componentes de dispersión
-│   │   └── navbar.tsx         # Navegación principal
+│   │   ├── navbar.tsx         # Navegación principal (responsive)
+│   │   └── mobile-menu.tsx    # Menú hamburguesa para móvil
 │   ├── lib/
 │   │   ├── actions/           # Server Actions (CRUD + lógica)
+│   │   │   ├── dashboard.ts   # Estadísticas del home
+│   │   │   ├── calendar.ts    # Eventos del calendario
+│   │   │   ├── distribution.ts # Dispersión automática
+│   │   │   └── ...            # Un archivo por entidad
 │   │   ├── validations/       # Schemas Zod + tests
+│   │   ├── utils/
+│   │   │   └── amortization.ts # Calculadora de amortización con IVA
 │   │   ├── auth.ts            # Configuración NextAuth
 │   │   ├── prisma.ts          # Singleton Prisma Client
 │   │   └── constants.ts       # Labels, catálogos
 │   └── test/
 │       └── setup.ts           # Setup de Vitest
 ├── CONVENTIONS.md             # Reglas de código y colaboración
-├── DESIGN.md                  # Diseño de entidades
-└── TECH_DECISIONS.md          # Decisiones técnicas
+├── DESIGN.md                  # Diseño de entidades y flujos
+├── TECH_DECISIONS.md          # Decisiones técnicas
+└── CONTRIBUTING.md            # Guía para contribuir
 ```
 
 ## Contribuir
