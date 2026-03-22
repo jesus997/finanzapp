@@ -54,7 +54,7 @@ export function SavingsFundForm({ fund, incomeSources }: Props) {
 
       <div className="space-y-2">
         <Label htmlFor="type">Tipo de ahorro</Label>
-        <Select value={savingsType} onValueChange={setSavingsType}>
+        <Select value={savingsType} onValueChange={(v) => setSavingsType(v ?? "FIXED_AMOUNT")}>
           <SelectTrigger id="type">
             <SelectValue />
           </SelectTrigger>

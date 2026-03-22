@@ -8,7 +8,7 @@ export const recurringExpenseSchema = z.object({
     "ONE_TIME", "WEEKLY", "BIWEEKLY", "MONTHLY",
     "BIMONTHLY", "QUARTERLY", "SEMIANNUAL", "ANNUAL",
   ]),
-  startDate: z.coerce.date({ required_error: "La fecha de inicio es requerida" }),
+  startDate: z.coerce.date({ error: "La fecha de inicio es requerida" }),
   endDate: z.preprocess((v) => (v === "" ? undefined : v), z.coerce.date().optional()),
   paymentMethodType: z.enum(["CREDIT_CARD", "DEBIT_CARD", "INCOME_SOURCE"]),
   paymentMethodId: z.string().min(1, "El método de pago es requerido"),

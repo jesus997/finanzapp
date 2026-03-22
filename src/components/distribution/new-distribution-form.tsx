@@ -74,7 +74,7 @@ export function NewDistributionForm({ incomeSources }: Props) {
       <div className="space-y-2">
         <Label>Fuente de ingreso recibida</Label>
         <div className="flex gap-2">
-          <Select value={sourceId} onValueChange={setSourceId}>
+          <Select value={sourceId} onValueChange={(v) => setSourceId(v ?? "")}>
             <SelectTrigger>
               <SelectValue placeholder="Selecciona un ingreso" />
             </SelectTrigger>

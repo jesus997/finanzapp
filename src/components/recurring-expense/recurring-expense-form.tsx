@@ -63,7 +63,8 @@ export function RecurringExpenseForm({ expense, cards, incomeSources }: Props) {
     methodType === "DEBIT_CARD" ? debitCards :
     incomeSources;
 
-  const handleMethodTypeChange = (type: string) => {
+  const handleMethodTypeChange = (type: string | null) => {
+    if (!type) return;
     setMethodType(type);
     setMethodId("");
   };
@@ -167,7 +168,7 @@ export function RecurringExpenseForm({ expense, cards, incomeSources }: Props) {
             No tienes {PAYMENT_METHOD_TYPE_LABELS[methodType]?.toLowerCase()}s registradas.
           </p>
         ) : (
-          <Select value={methodId} onValueChange={setMethodId}>
+          <Select value={methodId} onValueChange={(v) => setMethodId(v ?? "")}>
             <SelectTrigger id="paymentMethodId">
               <SelectValue placeholder="Selecciona" />
             </SelectTrigger>

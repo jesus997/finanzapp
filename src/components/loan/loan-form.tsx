@@ -38,7 +38,8 @@ export function LoanForm({ loan }: Props) {
   const [loanType, setLoanType] = useState<string>(loan?.type ?? "BANK");
   const [institution, setInstitution] = useState(loan?.institution ?? "");
 
-  const handleTypeChange = (type: string) => {
+  const handleTypeChange = (type: string | null) => {
+    if (!type) return;
     setLoanType(type);
     if (type === "INFONAVIT") setInstitution("Infonavit");
   };
@@ -81,7 +82,7 @@ export function LoanForm({ loan }: Props) {
         <BankCombobox
           name="institution"
           value={institution}
-          onValueChange={setInstitution}
+          onValueChange={(v) => setInstitution(v ?? "")}
         />
       </div>
 
