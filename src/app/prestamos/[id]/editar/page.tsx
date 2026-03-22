@@ -19,7 +19,7 @@ export default async function EditLoanPage({
     interestRate: Number(loan.interestRate),
     remainingBalance: Number(loan.remainingBalance),
     startDate: loan.startDate.toISOString(),
-    endDate: loan.endDate.toISOString(),
+    endDate: loan.endDate?.toISOString() ?? null,
     createdAt: loan.createdAt.toISOString(),
     updatedAt: loan.updatedAt.toISOString(),
   };

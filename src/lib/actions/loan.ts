@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import { loanSchema } from "@/lib/validations/loan";
+import { loanSchema, estimateEndDate } from "@/lib/validations/loan";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -34,8 +34,11 @@ export async function createLoan(formData: FormData) {
     throw new Error("Datos inválidos");
   }
 
+  const { endDate, ...rest } = parsed.data;
+  const computedEndDate = endDate ?? estimateEndDate(rest.startDate, rest.remainingBalance, rest.monthlyPayment);
+
   await prisma.loan.create({
-    data: { ...parsed.data, userId },
+    data: { ...rest, endDate: computedEndDate, userId },
   });
 
   revalidatePath("/prestamos");
@@ -51,9 +54,12 @@ export async function updateLoan(id: string, formData: FormData) {
     throw new Error("Datos inválidos");
   }
 
+  const { endDate, ...rest } = parsed.data;
+  const computedEndDate = endDate ?? estimateEndDate(rest.startDate, rest.remainingBalance, rest.monthlyPayment);
+
   await prisma.loan.update({
     where: { id, userId },
-    data: parsed.data,
+    data: { ...rest, endDate: computedEndDate },
   });
 
   revalidatePath("/prestamos");

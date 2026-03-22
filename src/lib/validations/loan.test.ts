@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { loanSchema } from "./loan";
+import { loanSchema, estimateEndDate } from "./loan";
 
 const valid = {
   name: "Crédito automotriz",
@@ -10,7 +10,8 @@ const valid = {
   interestRate: "12.5",
   startDate: "2025-01-15",
   endDate: "2029-01-15",
-  paymentDay: "15",
+  cutOffDay: "15",
+  paymentDueDay: "15",
   remainingBalance: "280000",
 };
 
@@ -52,9 +53,9 @@ describe("loanSchema", () => {
     if (result.success) expect(result.data.interestRate).toBe(0);
   });
 
-  it("rejects paymentDay outside 1-31", () => {
-    expect(loanSchema.safeParse({ ...valid, paymentDay: "0" }).success).toBe(false);
-    expect(loanSchema.safeParse({ ...valid, paymentDay: "32" }).success).toBe(false);
+  it("rejects paymentDueDay outside 1-31", () => {
+    expect(loanSchema.safeParse({ ...valid, paymentDueDay: "0" }).success).toBe(false);
+    expect(loanSchema.safeParse({ ...valid, paymentDueDay: "32" }).success).toBe(false);
   });
 
   it("rejects endDate before startDate", () => {
@@ -85,5 +86,51 @@ describe("loanSchema", () => {
       expect(typeof result.data.totalAmount).toBe("number");
       expect(result.data.startDate).toBeInstanceOf(Date);
     }
+  });
+
+  it("accepts empty endDate (optional)", () => {
+    const result = loanSchema.safeParse({ ...valid, endDate: "" });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.endDate).toBeUndefined();
+  });
+
+  it("accepts missing endDate", () => {
+    const { endDate: _, ...noEnd } = valid;
+    const result = loanSchema.safeParse(noEnd);
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts empty cutOffDay (optional)", () => {
+    const result = loanSchema.safeParse({ ...valid, cutOffDay: "" });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.cutOffDay).toBeUndefined();
+  });
+
+  it("accepts missing cutOffDay", () => {
+    const { cutOffDay: _, ...noCutOff } = valid;
+    const result = loanSchema.safeParse(noCutOff);
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects cutOffDay outside 1-31", () => {
+    expect(loanSchema.safeParse({ ...valid, cutOffDay: "0" }).success).toBe(false);
+    expect(loanSchema.safeParse({ ...valid, cutOffDay: "32" }).success).toBe(false);
+  });
+});
+
+describe("estimateEndDate", () => {
+  it("estimates end date from remaining balance and monthly payment", () => {
+    const start = new Date("2025-01-15");
+    const result = estimateEndDate(start, 24000, 8000);
+    // 24000 / 8000 = 3 months
+    expect(result.getFullYear()).toBe(2025);
+    expect(result.getMonth()).toBe(3); // April (0-indexed)
+  });
+
+  it("rounds up partial months", () => {
+    const start = new Date("2025-01-15");
+    const result = estimateEndDate(start, 25000, 8000);
+    // ceil(25000 / 8000) = 4 months
+    expect(result.getMonth()).toBe(4); // May
   });
 });

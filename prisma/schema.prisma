@@ -177,8 +177,9 @@ model Loan {
   monthlyPayment   Decimal
   interestRate     Decimal  @default(0)
   startDate        DateTime
-  endDate          DateTime
-  paymentDay       Int
+  endDate          DateTime?
+  cutOffDay        Int?
+  paymentDueDay    Int
   remainingBalance Decimal
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt

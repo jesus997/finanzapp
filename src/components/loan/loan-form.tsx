@@ -28,8 +28,9 @@ interface Props {
     monthlyPayment: number;
     interestRate: number;
     startDate: string;
-    endDate: string;
-    paymentDay: number;
+    endDate: string | null;
+    cutOffDay: number | null;
+    paymentDueDay: number;
     remainingBalance: number;
   };
 }
@@ -141,42 +142,55 @@ export function LoanForm({ loan }: Props) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-2">
-          <Label htmlFor="startDate">Fecha de inicio</Label>
-          <Input
-            id="startDate"
-            name="startDate"
-            type="date"
-            required
-            defaultValue={loan?.startDate?.slice(0, 10)}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="endDate">Fecha de fin</Label>
-          <Input
-            id="endDate"
-            name="endDate"
-            type="date"
-            required
-            defaultValue={loan?.endDate?.slice(0, 10)}
-          />
-        </div>
+      <div className="space-y-2">
+        <Label htmlFor="startDate">Fecha de inicio</Label>
+        <Input
+          id="startDate"
+          name="startDate"
+          type="date"
+          required
+          defaultValue={loan?.startDate?.slice(0, 10)}
+        />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="paymentDay">Día de pago</Label>
-        <Select name="paymentDay" defaultValue={loan?.paymentDay?.toString() ?? "1"}>
-          <SelectTrigger id="paymentDay">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {DAYS_OF_MONTH.map((d) => (
-              <SelectItem key={d} value={d.toString()}>{d}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <Label htmlFor="endDate">Fecha de fin (opcional, se calcula si se omite)</Label>
+        <Input
+          id="endDate"
+          name="endDate"
+          type="date"
+          defaultValue={loan?.endDate?.slice(0, 10) ?? ""}
+        />
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-2">
+          <Label htmlFor="cutOffDay">Día de corte (opcional)</Label>
+          <Select name="cutOffDay" defaultValue={loan?.cutOffDay?.toString() ?? ""}>
+            <SelectTrigger id="cutOffDay">
+              <SelectValue placeholder="Sin corte" />
+            </SelectTrigger>
+            <SelectContent>
+              {DAYS_OF_MONTH.map((d) => (
+                <SelectItem key={d} value={d.toString()}>{d}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="paymentDueDay">Día límite de pago</Label>
+          <Select name="paymentDueDay" defaultValue={loan?.paymentDueDay?.toString() ?? "1"}>
+            <SelectTrigger id="paymentDueDay">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {DAYS_OF_MONTH.map((d) => (
+                <SelectItem key={d} value={d.toString()}>{d}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <Button type="submit">

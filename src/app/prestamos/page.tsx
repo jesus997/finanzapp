@@ -34,7 +34,7 @@ export default async function LoansPage() {
                   <div>
                     <p className="font-semibold">{loan.name}</p>
                     <p className="text-sm text-muted-foreground">
-                      {loan.institution} · Día de pago: {loan.paymentDay}
+                      {loan.institution}{loan.cutOffDay ? ` · Corte: ${loan.cutOffDay}` : ""} · Pago: {loan.paymentDueDay}
                     </p>
                   </div>
                   <Badge variant="secondary">

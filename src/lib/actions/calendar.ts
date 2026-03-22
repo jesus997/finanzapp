@@ -90,8 +90,18 @@ export async function getCalendarEvents(year: number, month: number): Promise<Ca
     const progress = total > 0 ? ((total - remaining) / total * 100).toFixed(0) : 0;
     const detail = `${LOAN_TYPE_LABELS[loan.type]} · ${loan.institution} · Saldo: ${fmt(remaining)} · Progreso: ${progress}%`;
 
+    if (loan.cutOffDay) {
+      events.push({
+        day: loan.cutOffDay,
+        label: `${loan.name} (corte)`,
+        type: "loan",
+        amount: null,
+        detail,
+      });
+    }
+
     events.push({
-      day: loan.paymentDay,
+      day: loan.paymentDueDay,
       label: loan.name,
       type: "loan",
       amount: Number(loan.monthlyPayment),

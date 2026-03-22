@@ -9,11 +9,18 @@ export const loanSchema = z
     monthlyPayment: z.coerce.number().positive("El pago mensual debe ser mayor a 0"),
     interestRate: z.coerce.number().min(0, "La tasa no puede ser negativa").default(0),
     startDate: z.coerce.date({ error: "La fecha de inicio es requerida" }),
-    endDate: z.coerce.date({ error: "La fecha de fin es requerida" }),
-    paymentDay: z.coerce.number().int().min(1).max(31, "Día de pago entre 1 y 31"),
+    endDate: z.preprocess(
+      (v) => (v === "" || v === undefined || v === null ? undefined : v),
+      z.coerce.date().optional()
+    ),
+    cutOffDay: z.preprocess(
+      (v) => (v === "" || v === undefined || v === null ? undefined : v),
+      z.coerce.number().int().min(1).max(31, "Día de corte entre 1 y 31").optional()
+    ),
+    paymentDueDay: z.coerce.number().int().min(1).max(31, "Día límite de pago entre 1 y 31"),
     remainingBalance: z.coerce.number().min(0, "El saldo no puede ser negativo"),
   })
-  .refine((data) => data.endDate > data.startDate, {
+  .refine((data) => !data.endDate || data.endDate > data.startDate, {
     message: "La fecha de fin debe ser posterior a la de inicio",
     path: ["endDate"],
   })
@@ -21,5 +28,13 @@ export const loanSchema = z
     message: "El saldo restante no puede ser mayor al monto total",
     path: ["remainingBalance"],
   });
+
+/** Estimate end date from remaining balance and monthly payment */
+export function estimateEndDate(startDate: Date, remainingBalance: number, monthlyPayment: number): Date {
+  const months = Math.ceil(remainingBalance / monthlyPayment);
+  const end = new Date(startDate);
+  end.setMonth(end.getMonth() + months);
+  return end;
+}
 
 export type LoanInput = z.infer<typeof loanSchema>;
