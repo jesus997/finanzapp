@@ -41,6 +41,12 @@ const PAY_DAY_LABELS: Record<string, string[]> = {
   BIMONTHLY: ["Pago 1", "Pago 2", "Pago 3", "Pago 4", "Pago 5", "Pago 6"],
 };
 
+interface DebitCardOption {
+  id: string;
+  name: string;
+  lastFourDigits: string;
+}
+
 interface Props {
   incomeSource?: {
     id: string;
@@ -53,11 +59,13 @@ interface Props {
     payMonth: number[];
     isVariable: boolean;
     oneTimeDate: string | null;
+    depositCardId: string | null;
     active: boolean;
   };
+  debitCards: DebitCardOption[];
 }
 
-export function IncomeSourceForm({ incomeSource }: Props) {
+export function IncomeSourceForm({ incomeSource, debitCards }: Props) {
   const [frequency, setFrequency] = useState<Frequency>(
     incomeSource?.frequency ?? "MONTHLY"
   );
@@ -252,6 +260,24 @@ export function IncomeSourceForm({ incomeSource }: Props) {
               );
             })}
         </>
+      )}
+
+      {debitCards.length > 0 && (
+        <div className="space-y-2">
+          <Label htmlFor="depositCardId">Tarjeta donde se deposita (opcional)</Label>
+          <Select name="depositCardId" defaultValue={incomeSource?.depositCardId ?? ""}>
+            <SelectTrigger id="depositCardId">
+              <SelectValue placeholder="Sin tarjeta asociada" />
+            </SelectTrigger>
+            <SelectContent>
+              {debitCards.map((card) => (
+                <SelectItem key={card.id} value={card.id}>
+                  {card.name} (••••{card.lastFourDigits})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       )}
 
       <Button type="submit">

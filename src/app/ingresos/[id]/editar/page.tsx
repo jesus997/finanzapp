@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getIncomeSource } from "@/lib/actions/income-source";
+import { getIncomeSource, getDebitCards } from "@/lib/actions/income-source";
 import { IncomeSourceForm } from "@/components/income-source/income-source-form";
 
 export default async function EditIncomePage({
@@ -8,22 +8,32 @@ export default async function EditIncomePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const incomeSource = await getIncomeSource(id);
+  const [incomeSource, debitCards] = await Promise.all([
+    getIncomeSource(id),
+    getDebitCards(),
+  ]);
 
   if (!incomeSource) notFound();
 
   const serialized = {
-    ...incomeSource,
+    id: incomeSource.id,
+    name: incomeSource.name,
+    type: incomeSource.type,
     amount: Number(incomeSource.amount),
+    frequency: incomeSource.frequency,
+    payDayType: incomeSource.payDayType,
+    payDay: incomeSource.payDay,
+    payMonth: incomeSource.payMonth,
+    isVariable: incomeSource.isVariable,
     oneTimeDate: incomeSource.oneTimeDate?.toISOString() ?? null,
-    createdAt: incomeSource.createdAt.toISOString(),
-    updatedAt: incomeSource.updatedAt.toISOString(),
+    depositCardId: incomeSource.depositCardId,
+    active: incomeSource.active,
   };
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Editar fuente de ingreso</h1>
-      <IncomeSourceForm incomeSource={serialized} />
+      <IncomeSourceForm incomeSource={serialized} debitCards={debitCards} />
     </div>
   );
 }

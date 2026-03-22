@@ -51,6 +51,7 @@ export default async function IncomePage() {
               <TableHead>Monto</TableHead>
               <TableHead>Frecuencia</TableHead>
               <TableHead>Día(s) de pago</TableHead>
+              <TableHead>Depósito en</TableHead>
               <TableHead>Estado</TableHead>
               <TableHead />
             </TableRow>
@@ -68,6 +69,11 @@ export default async function IncomePage() {
                 </TableCell>
                 <TableCell>{FREQUENCY_LABELS[source.frequency]}</TableCell>
                 <TableCell>{formatPayDay(source)}</TableCell>
+                <TableCell className="text-sm text-muted-foreground">
+                  {source.depositCard
+                    ? `${source.depositCard.name} (••••${source.depositCard.lastFourDigits})`
+                    : "—"}
+                </TableCell>
                 <TableCell>
                   <Badge variant={source.active ? "default" : "secondary"}>
                     {source.active ? "Activo" : "Inactivo"}

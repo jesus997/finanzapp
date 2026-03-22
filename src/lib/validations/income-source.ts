@@ -32,6 +32,10 @@ export const incomeSourceSchema = z
       .default([]),
     isVariable: z.coerce.boolean().default(false),
     oneTimeDate: z.coerce.date().optional(),
+    depositCardId: z.preprocess(
+      (v) => (v === "" || v === undefined || v === null ? undefined : v),
+      z.string().optional(),
+    ),
     active: z.boolean().default(true),
   })
   .refine(

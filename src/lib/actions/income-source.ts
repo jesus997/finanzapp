@@ -17,6 +17,15 @@ export async function getIncomeSources() {
   return prisma.incomeSource.findMany({
     where: { userId },
     orderBy: { createdAt: "desc" },
+    include: { depositCard: { select: { name: true, lastFourDigits: true } } },
+  });
+}
+
+export async function getDebitCards() {
+  const userId = await getAuthUserId();
+  return prisma.card.findMany({
+    where: { userId, type: "DEBIT" },
+    select: { id: true, name: true, lastFourDigits: true },
   });
 }
 
