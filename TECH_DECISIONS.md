@@ -156,6 +156,26 @@ Registro de decisiones técnicas tomadas durante el desarrollo del proyecto. Cad
   - Cache/materialización: Sobreingeniería para el volumen actual.
 - **Razón**: Reutilizar el calendario evita duplicar la lógica de "qué eventos caen este mes". Los próximos 5 eventos desde hoy dan visibilidad inmediata al abrir la app.
 
+## 17. Gastos diarios separados de gastos periódicos
+
+**Modelo `Expense` independiente de `RecurringExpense`**
+
+- **Decisión**: Dos modelos separados — `RecurringExpense` para compromisos periódicos (suscripciones, servicios, seguros) y `Expense` para gastos únicos/diarios (supermercado, restaurante, compras).
+- **Alternativas descartadas**:
+  - Un solo modelo con frecuencia `ONE_TIME`: Mezcla conceptos distintos. Los periódicos participan en dispersión y prorrateo; los diarios son registros históricos.
+- **Razón**: Los gastos periódicos son compromisos futuros que se prorratan en la dispersión. Los gastos diarios son registros de gastos ya realizados. Separarlos simplifica ambos flujos y evita contaminar la dispersión con gastos puntuales.
+
+## 18. OCR de tickets con Tesseract.js y provider abstracto
+
+**Tesseract.js en browser + interfaz para swap a OpenAI Vision**
+
+- **Decisión**: OCR con Tesseract.js (WebAssembly, corre en el browser) detrás de una interfaz `OcrProvider`. Factory `getOcrProvider()` retorna Tesseract por defecto, preparado para retornar Vision cuando exista `OPENAI_API_KEY`.
+- **Alternativas descartadas**:
+  - OpenAI Vision directamente: Requiere API key, el usuario quiere funcionalidad sin IA primero.
+  - OCR.space API: Dependencia externa con límites de uso.
+  - Google Cloud Vision: Requiere cuenta GCP.
+- **Razón**: Zero backend, sin API key, sin costos, funciona offline. La precisión no es perfecta pero el usuario siempre confirma/edita antes de guardar (funciona como "autocompletado inteligente"). El parser heurístico (`receipt-parser.ts`) extrae nombre, total y fecha de tickets mexicanos comunes.
+
 ## Resumen del Stack
 
 | Capa | Tecnología | Versión |
@@ -169,4 +189,5 @@ Registro de decisiones técnicas tomadas durante el desarrollo del proyecto. Cad
 | Validación | Zod | 3 |
 | Testing | Vitest + RTL | 4 |
 | Deploy | Vercel | — |
+| OCR | Tesseract.js | 6 |
 | IA (opcional) | OpenAI API | — |

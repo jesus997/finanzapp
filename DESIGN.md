@@ -52,6 +52,14 @@
 - type: `FIXED_AMOUNT` | `PERCENTAGE`
 - value, incomeSourceId, accumulatedBalance
 
+### Expense
+- id, userId, name, description
+- amount, date
+- category (mismas 13 categorías que RecurringExpense)
+- paymentMethodType: `CREDIT_CARD` | `DEBIT_CARD` | `INCOME_SOURCE`
+- paymentMethodId (referencia polimórfica)
+- Nota: gastos únicos/diarios, separados de RecurringExpense (compromisos periódicos)
+
 ### Distribution
 - id, userId, incomeSourceId, date, totalAmount
 - details: [{destinationType, destinationId, groupId?, amount}]
@@ -107,12 +115,12 @@ Cada tarjeta se muestra como una cajita con el total a apartar y el desglose de 
 
 El home muestra estadísticas rápidas al usuario autenticado:
 
-- **Resumen del mes**: 4 tarjetas — ingresos, gastos, préstamos, balance proyectado (ingresos - gastos - préstamos)
+- **Resumen del mes**: 4 tarjetas — ingresos, gastos (periódicos + diarios), préstamos, balance proyectado (ingresos - gastos - préstamos)
 - **Ahorro y deuda**: 2 tarjetas — ahorro acumulado total, deuda total (suma de saldos restantes de préstamos)
 - **Próximos pagos e ingresos**: hasta 5 eventos desde hoy, con colores por tipo y monto
 - **Accesos rápidos**: grid de botones a cada módulo
 
-Los totales del mes se calculan reutilizando `getCalendarEvents()`. Ahorro y deuda son queries directas.
+Los totales del mes se calculan reutilizando `getCalendarEvents()` + aggregate de gastos diarios. Ahorro y deuda son queries directas.
 
 ## 7. Diseño Responsive
 
@@ -127,7 +135,17 @@ La app está optimizada para uso en móvil:
 - **Formularios**: `max-w-md` funciona en mobile sin cambios
 - **Tarjetas (cards page)**: vista de gastos por tarjeta con toggle expandible
 
-## 8. Módulo IA (Opcional)
+## 8. Escaneo de tickets (OCR)
+
+Permite registrar gastos diarios tomando una foto de un ticket de compra:
+
+- **Interfaz abstracta** (`src/lib/ocr/types.ts`): `OcrProvider` con método `extractText()`
+- **Tesseract.js** (`src/lib/ocr/tesseract-provider.ts`): OCR en el browser vía WebAssembly, sin API key
+- **Factory** (`src/lib/ocr/index.ts`): `getOcrProvider()` retorna Tesseract por defecto. Preparado para retornar OpenAI Vision cuando se agregue el módulo de IA y exista `OPENAI_API_KEY`
+- **Parser de tickets** (`src/lib/utils/receipt-parser.ts`): extrae nombre de tienda (primeras líneas), total (busca "TOTAL" de abajo hacia arriba, ignora SUBTOTAL), fecha (DD/MM/YYYY o DD-MM-YYYY)
+- **Flujo**: usuario toca "📷 Escanear ticket" → abre cámara (`capture="environment"`) → Tesseract extrae texto → parser pre-llena nombre/monto/fecha → usuario confirma/edita → se guarda
+
+## 9. Módulo IA (Opcional)
 
 Funciona sin IA por defecto. Al configurar API key de OpenAI:
 - Categorización automática de gastos
@@ -136,7 +154,7 @@ Funciona sin IA por defecto. Al configurar API key de OpenAI:
 - Chat para consultas sobre finanzas personales
 - Optimización de distribución de pagos
 
-## 9. Páginas de la App
+## 10. Páginas de la App
 
 | Ruta | Estado | Descripción |
 |---|---|---|
@@ -146,6 +164,7 @@ Funciona sin IA por defecto. Al configurar API key de OpenAI:
 | `/prestamos` | ✅ | CRUD préstamos con frecuencia de pago variable |
 | `/prestamos/[id]` | ✅ | Detalle con tabla de amortización y resumen |
 | `/gastos` | ✅ | CRUD gastos periódicos con método de pago, categorías y días de cobro |
+| `/gastos-diarios` | ✅ | CRUD gastos únicos con escaneo de tickets (OCR) |
 | `/ahorro` | ✅ | Gestión de apartados de ahorro (monto fijo o porcentaje) |
 | `/calendario` | ✅ | Vista calendario mensual/lista con eventos de todos los módulos |
 | `/dispersiones` | ✅ | Dispersión automática con prorrateo por cobro y agrupación por tarjeta |

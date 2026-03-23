@@ -9,6 +9,7 @@ Aplicación web open source para gestión de finanzas personales. Controla tus t
 - **Tarjetas** — Crédito y débito unificadas. Fecha de corte, pago, límite, tasa de interés. Soporte para Visa, Mastercard, Amex. Vista de gastos vinculados por tarjeta con toggle expandible.
 - **Préstamos** — Bancarios, nómina, automotrices, Infonavit, hipotecarios. Frecuencia de pago variable (diario, semanal, quincenal, mensual). Tabla de amortización con IVA sobre intereses. Fecha de fin estimada automáticamente si se omite. Barra de progreso visual.
 - **Gastos periódicos** — Mensuales, quincenales, bimestrales con fecha inicio/fin. 13 categorías predefinidas. Días de cobro específicos. Vinculados a tarjeta o fuente de ingreso.
+- **Gastos diarios** — Registro de gastos únicos con escaneo de tickets vía OCR (Tesseract.js). Toma una foto del ticket y se pre-llenan nombre, monto y fecha automáticamente. Integrado en dashboard y calendario.
 - **Apartados de ahorro** — Por cantidad fija o porcentaje de ingreso, vinculados a fuente de ingreso.
 - **Dispersión automática** — Al registrar ingreso, prorratea gastos y ahorros por cobro. Agrupa por tarjeta ("bolsas"). Soporte para revertir.
 - **Calendario de pagos** — Vista mensual (grid en desktop, lista en móvil) con eventos de ingresos, tarjetas, préstamos y gastos. Navegación entre meses. Detalle al hacer click.
@@ -28,6 +29,7 @@ Aplicación web open source para gestión de finanzas personales. Controla tus t
 | UI | [Tailwind CSS](https://tailwindcss.com/) v4 + [shadcn/ui](https://ui.shadcn.com/) |
 | Validación | [Zod](https://zod.dev/) |
 | Testing | [Vitest](https://vitest.dev/) + [React Testing Library](https://testing-library.com/) |
+| OCR | [Tesseract.js](https://tesseract.projectnaptha.com/) |
 | Deploy | [Vercel](https://vercel.com/) |
 
 ## Requisitos previos
@@ -113,6 +115,7 @@ finanzapp/
 │   │   ├── tarjetas/          # CRUD tarjetas
 │   │   ├── prestamos/         # CRUD préstamos + detalle con amortización
 │   │   ├── gastos/            # CRUD gastos periódicos
+│   │   ├── gastos-diarios/    # CRUD gastos únicos + escaneo de tickets
 │   │   ├── ahorro/            # CRUD apartados de ahorro
 │   │   ├── calendario/        # Vista calendario de pagos
 │   │   └── dispersiones/      # Dispersión automática
@@ -121,7 +124,8 @@ finanzapp/
 │   │   ├── income-source/     # Componentes de ingresos
 │   │   ├── card/              # Componentes de tarjetas
 │   │   ├── loan/              # Componentes de préstamos y amortización
-│   │   ├── recurring-expense/ # Componentes de gastos
+│   │   ├── recurring-expense/ # Componentes de gastos periódicos
+│   │   ├── expense/           # Componentes de gastos diarios
 │   │   ├── savings-fund/      # Componentes de ahorro
 │   │   ├── calendar/          # Componentes de calendario (grid + lista)
 │   │   ├── distribution/      # Componentes de dispersión
@@ -135,7 +139,9 @@ finanzapp/
 │   │   │   └── ...            # Un archivo por entidad
 │   │   ├── validations/       # Schemas Zod + tests
 │   │   ├── utils/
-│   │   │   └── amortization.ts # Calculadora de amortización con IVA
+│   │   │   ├── amortization.ts # Calculadora de amortización con IVA
+│   │   │   └── receipt-parser.ts # Parser de tickets OCR
+│   │   ├── ocr/               # Providers OCR (Tesseract, futuro Vision)
 │   │   ├── auth.ts            # Configuración NextAuth
 │   │   ├── prisma.ts          # Singleton Prisma Client
 │   │   └── constants.ts       # Labels, catálogos

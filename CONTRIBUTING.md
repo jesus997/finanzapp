@@ -60,7 +60,7 @@ src/
 
 Además:
 - Agregar labels en español a `src/lib/constants.ts`
-- Agregar link en `src/components/navbar.tsx`
+- Agregar link en `src/components/navbar.tsx` y `src/components/mobile-menu.tsx`
 - Agregar acceso rápido en `src/app/page.tsx`
 - Actualizar `DESIGN.md` con el estado de la nueva página
 
