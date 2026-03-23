@@ -2,6 +2,8 @@ import { auth } from "@/lib/auth";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button-variants";
 import { getDashboardStats } from "@/lib/actions/dashboard";
+import { getOnboardingStatus } from "@/lib/actions/onboarding";
+import { OnboardingTour } from "@/components/onboarding-tour";
 
 const EVENT_STYLES: Record<string, string> = {
   income: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
@@ -33,16 +35,21 @@ export default async function Home() {
     );
   }
 
-  const stats = await getDashboardStats();
+  const [stats, onboardingCompleted] = await Promise.all([
+    getDashboardStats(),
+    getOnboardingStatus(),
+  ]);
 
   return (
     <div className="space-y-6">
+      {!onboardingCompleted && <OnboardingTour />}
+
       <h1 className="text-2xl font-bold">
         Hola, {session.user.name ?? "usuario"}
       </h1>
 
       {/* Resumen del mes */}
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+      <div id="tour-summary" className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         <div className="rounded-xl border p-4">
           <p className="text-xs text-muted-foreground">Ingresos del mes</p>
           <p className="text-lg font-semibold text-green-600">{fmt(stats.monthlyIncome)}</p>
@@ -76,9 +83,9 @@ export default async function Home() {
       </div>
 
       {/* Próximos eventos */}
-      {stats.upcoming.length > 0 && (
-        <div className="space-y-3">
-          <h2 className="text-lg font-semibold">Próximos pagos e ingresos</h2>
+      <div id="tour-upcoming" className="space-y-3">
+        <h2 className="text-lg font-semibold">Próximos pagos e ingresos</h2>
+        {stats.upcoming.length > 0 ? (
           <div className="space-y-2">
             {stats.upcoming.map((e, i) => (
               <div
@@ -95,11 +102,13 @@ export default async function Home() {
               </div>
             ))}
           </div>
-        </div>
-      )}
+        ) : (
+          <p className="text-sm text-muted-foreground">Sin eventos próximos. Registra tus ingresos y gastos para verlos aquí.</p>
+        )}
+      </div>
 
       {/* Accesos rápidos */}
-      <div className="space-y-3">
+      <div id="tour-shortcuts" className="space-y-3">
         <h2 className="text-lg font-semibold">Accesos rápidos</h2>
         <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
           <Link href="/ingresos" className={buttonVariants({ variant: "outline", className: "h-16" })}>
