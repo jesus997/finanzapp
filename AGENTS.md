@@ -21,7 +21,9 @@ FinanzApp es una app web open source de gestión de finanzas personales construi
 
 1. **Código y BD en inglés**, documentación y UI en español.
 2. **Tests obligatorios** para todo código nuevo. Schemas Zod en `src/lib/validations/` con `*.test.ts` junto al archivo.
-3. **shadcn/ui usa base-ui, NO Radix**. No existe `asChild`. Los Selects controlados necesitan `<input type="hidden">` explícitos.
+3. **shadcn/ui usa base-ui, NO Radix**. No existe `asChild`. Los Selects controlados necesitan `<input type="hidden">` explícitos. `onValueChange` puede pasar `null` — usar `(v) => setState(v ?? "")`.
 4. **Prisma Decimal/Date** no son serializables a Client Components. Convertir antes de pasar como props.
 5. **Para delete con userId**, usar `deleteMany` en vez de `delete`.
 6. **Botones de submit en Server Components**: usar `<button type="submit">` nativo, no el componente `Button` de base-ui.
+7. **Dos tipos de gastos**: `RecurringExpense` (periódicos, participan en dispersión) y `Expense` (diarios/únicos, registro histórico). No mezclar.
+8. **OCR con provider abstracto**: `OcrProvider` interface en `src/lib/ocr/`. Tesseract.js ahora, OpenAI Vision después. No acoplar a un provider específico.

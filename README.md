@@ -14,6 +14,7 @@ Aplicación web open source para gestión de finanzas personales. Controla tus t
 - **Dispersión automática** — Al registrar ingreso, prorratea gastos y ahorros por cobro. Agrupa por tarjeta ("bolsas"). Soporte para revertir.
 - **Calendario de pagos** — Vista mensual (grid en desktop, lista en móvil) con eventos de ingresos, tarjetas, préstamos y gastos. Navegación entre meses. Detalle al hacer click.
 - **Diseño responsive** — Optimizado para uso en móvil con menú hamburguesa, cards en mobile y tablas en desktop.
+- **Onboarding** — Tutorial guiado para nuevos usuarios que explica el concepto de la app y cómo usarla. Se muestra una sola vez.
 - **Reportería** — Gasto por tarjeta, totales por periodo, balance general *(próximamente)*
 - **Integración IA (opcional)** — Categorización, recomendaciones, detección de gastos hormiga vía OpenAI *(próximamente)*
 
@@ -30,6 +31,7 @@ Aplicación web open source para gestión de finanzas personales. Controla tus t
 | Validación | [Zod](https://zod.dev/) |
 | Testing | [Vitest](https://vitest.dev/) + [React Testing Library](https://testing-library.com/) |
 | OCR | [Tesseract.js](https://tesseract.projectnaptha.com/) |
+| Onboarding | [Driver.js](https://driverjs.com/) |
 | Deploy | [Vercel](https://vercel.com/) |
 
 ## Requisitos previos
@@ -130,7 +132,8 @@ finanzapp/
 │   │   ├── calendar/          # Componentes de calendario (grid + lista)
 │   │   ├── distribution/      # Componentes de dispersión
 │   │   ├── navbar.tsx         # Navegación principal (responsive)
-│   │   └── mobile-menu.tsx    # Menú hamburguesa para móvil
+│   │   ├── mobile-menu.tsx    # Menú hamburguesa para móvil
+│   │   └── onboarding-tour.tsx # Tutorial guiado (Driver.js)
 │   ├── lib/
 │   │   ├── actions/           # Server Actions (CRUD + lógica)
 │   │   │   ├── dashboard.ts   # Estadísticas del home

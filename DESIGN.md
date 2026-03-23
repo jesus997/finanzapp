@@ -7,6 +7,7 @@
 ### User
 - id, email, name, image
 - currency (default: MXN)
+- onboardingCompleted (default: false) — controla si el tutorial ya se mostró
 - createdAt, updatedAt
 - Relación: NextAuth Account y Session (gestionadas por el adapter de Prisma)
 
@@ -145,7 +146,17 @@ Permite registrar gastos diarios tomando una foto de un ticket de compra:
 - **Parser de tickets** (`src/lib/utils/receipt-parser.ts`): extrae nombre de tienda (primeras líneas), total (busca "TOTAL" de abajo hacia arriba, ignora SUBTOTAL), fecha (DD/MM/YYYY o DD-MM-YYYY)
 - **Flujo**: usuario toca "📷 Escanear ticket" → abre cámara (`capture="environment"`) → Tesseract extrae texto → parser pre-llena nombre/monto/fecha → usuario confirma/edita → se guarda
 
-## 9. Módulo IA (Opcional)
+## 9. Onboarding (Tutorial para nuevos usuarios)
+
+Tour guiado con Driver.js que se muestra al primer inicio de sesión:
+
+- **Persistencia**: campo `onboardingCompleted` en User. Se marca `true` al completar o cerrar el tour.
+- **7 pasos**: bienvenida (concepto de la app: separar dinero cada quincena para cubrir deudas), resumen del mes, próximos pagos, registrar ingresos, agregar gastos/deudas, usar dispersiones, cierre.
+- **Mensaje central**: "Cada quincena separas dinero para pagar tus deudas y gastos. Así nunca se te pasa un pago y siempre sabes cuánto apartar."
+- **Componente**: `src/components/onboarding-tour.tsx` (Client Component)
+- **Action**: `src/lib/actions/onboarding.ts` (`completeOnboarding`, `getOnboardingStatus`)
+
+## 10. Módulo IA (Opcional)
 
 Funciona sin IA por defecto. Al configurar API key de OpenAI:
 - Categorización automática de gastos
@@ -154,11 +165,11 @@ Funciona sin IA por defecto. Al configurar API key de OpenAI:
 - Chat para consultas sobre finanzas personales
 - Optimización de distribución de pagos
 
-## 10. Páginas de la App
+## 11. Páginas de la App
 
 | Ruta | Estado | Descripción |
 |---|---|---|
-| `/` | ✅ | Dashboard con estadísticas, próximos eventos y accesos rápidos |
+| `/` | ✅ | Dashboard con estadísticas, próximos eventos, accesos rápidos y onboarding |
 | `/ingresos` | ✅ | CRUD fuentes de ingreso con tarjeta de depósito opcional |
 | `/tarjetas` | ✅ | CRUD tarjetas crédito y débito, vista de gastos por tarjeta |
 | `/prestamos` | ✅ | CRUD préstamos con frecuencia de pago variable |
@@ -171,3 +182,17 @@ Funciona sin IA por defecto. Al configurar API key de OpenAI:
 | `/reportes` | 🔲 | Reportería y gráficas |
 | `/ia` | 🔲 | Chat y herramientas IA |
 | `/configuracion` | 🔲 | API keys, preferencias |
+
+## 12. Roadmap / Pendientes
+
+### Próximas funcionalidades
+- **Reportería** — Gasto por tarjeta, totales por periodo, balance general, gráficas de tendencia
+- **Módulo IA** — Categorización automática de gastos, recomendaciones de ahorro, detección de gastos hormiga, chat financiero (OpenAI). El OCR de tickets ya está preparado para usar Vision como provider alternativo
+- **Configuración** — Página de settings: API keys (OpenAI), preferencias de moneda, tema
+- **Pagos adelantados de préstamos** — Registrar abonos a capital y recalcular amortización
+- **Mejoras al OCR** — Provider de OpenAI Vision para mejor precisión en tickets, extracción de detalle de productos
+
+### Mejoras técnicas pendientes
+- Agregar `error.tsx`, `loading.tsx` y `not-found.tsx` en rutas que falten
+- Viewport meta tag configuration (verificar)
+- Considerar PWA para mejor experiencia móvil

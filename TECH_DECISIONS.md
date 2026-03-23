@@ -176,6 +176,18 @@ Registro de decisiones técnicas tomadas durante el desarrollo del proyecto. Cad
   - Google Cloud Vision: Requiere cuenta GCP.
 - **Razón**: Zero backend, sin API key, sin costos, funciona offline. La precisión no es perfecta pero el usuario siempre confirma/edita antes de guardar (funciona como "autocompletado inteligente"). El parser heurístico (`receipt-parser.ts`) extrae nombre, total y fecha de tickets mexicanos comunes.
 
+## 19. Onboarding tour con Driver.js
+
+**Driver.js para tutorial guiado de nuevos usuarios**
+
+- **Decisión**: Driver.js (~5KB) para tour paso a paso con spotlight/overlay. Flag `onboardingCompleted` en BD para persistir estado.
+- **Alternativas descartadas**:
+  - React Joyride (~15KB): Más pesada, API más compleja.
+  - Shepherd.js (~25KB): Overkill para un tour simple.
+  - Intro.js: Licencia comercial de pago.
+  - localStorage: Se pierde entre dispositivos/browsers.
+- **Razón**: La más ligera, zero dependencias, API simple, MIT license. El flag en BD garantiza que el tour no reaparece aunque el usuario cambie de dispositivo.
+
 ## Resumen del Stack
 
 | Capa | Tecnología | Versión |
@@ -190,4 +202,5 @@ Registro de decisiones técnicas tomadas durante el desarrollo del proyecto. Cad
 | Testing | Vitest + RTL | 4 |
 | Deploy | Vercel | — |
 | OCR | Tesseract.js | 6 |
+| Onboarding | Driver.js | 1 |
 | IA (opcional) | OpenAI API | — |
