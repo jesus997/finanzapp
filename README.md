@@ -12,6 +12,7 @@ Aplicación web open source para gestión de finanzas personales. Controla tus t
 - **Gastos diarios** — Registro de gastos únicos con escaneo de tickets vía OCR (Tesseract.js). Toma una foto del ticket y se pre-llenan nombre, monto y fecha automáticamente. Integrado en dashboard y calendario.
 - **Apartados de ahorro** — Por cantidad fija o porcentaje de ingreso, vinculados a fuente de ingreso.
 - **Dispersión automática** — Al registrar ingreso, prorratea gastos y ahorros por cobro. Agrupa por tarjeta ("bolsas"). Soporte para revertir.
+- **Lista de compras** — Inicia una compra en el super, escanea códigos de barras con la cámara para agregar productos. Catálogo global (Open Food Facts + manual). Precios por tienda (Walmart, Oxxo, Soriana + custom). Total acumulado en tiempo real. Al pagar, escanea el ticket para validar precios reales. Genera gasto diario automáticamente.
 - **Calendario de pagos** — Vista mensual (grid en desktop, lista en móvil) con eventos de ingresos, tarjetas, préstamos y gastos. Navegación entre meses. Detalle al hacer click.
 - **Diseño responsive** — Optimizado para uso en móvil con menú hamburguesa, cards en mobile y tablas en desktop.
 - **Onboarding** — Tutorial guiado para nuevos usuarios que explica el concepto de la app y cómo usarla. Se muestra una sola vez.
@@ -31,6 +32,7 @@ Aplicación web open source para gestión de finanzas personales. Controla tus t
 | Validación | [Zod](https://zod.dev/) |
 | Testing | [Vitest](https://vitest.dev/) + [React Testing Library](https://testing-library.com/) |
 | OCR | [Tesseract.js](https://tesseract.projectnaptha.com/) |
+| Barcode | [html5-qrcode](https://github.com/mebjas/html5-qrcode) |
 | Onboarding | [Driver.js](https://driverjs.com/) |
 | Deploy | [Vercel](https://vercel.com/) |
 
@@ -120,9 +122,9 @@ finanzapp/
 │   │   ├── gastos-diarios/    # CRUD gastos únicos + escaneo de tickets
 │   │   ├── ahorro/            # CRUD apartados de ahorro
 │   │   ├── calendario/        # Vista calendario de pagos
-│   │   └── dispersiones/      # Dispersión automática
+│   │   ├── dispersiones/      # Dispersión automática
+│   │   └── compras/           # Lista de compras con escaneo de códigos
 │   ├── components/
-│   │   ├── ui/                # Componentes base (shadcn/ui)
 │   │   ├── income-source/     # Componentes de ingresos
 │   │   ├── card/              # Componentes de tarjetas
 │   │   ├── loan/              # Componentes de préstamos y amortización
@@ -131,6 +133,7 @@ finanzapp/
 │   │   ├── savings-fund/      # Componentes de ahorro
 │   │   ├── calendar/          # Componentes de calendario (grid + lista)
 │   │   ├── distribution/      # Componentes de dispersión
+│   │   ├── shopping/          # Componentes de lista de compras (escáner, lista en vivo)
 │   │   ├── navbar.tsx         # Navegación principal (responsive)
 │   │   ├── mobile-menu.tsx    # Menú hamburguesa para móvil
 │   │   └── onboarding-tour.tsx # Tutorial guiado (Driver.js)

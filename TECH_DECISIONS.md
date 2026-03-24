@@ -188,6 +188,28 @@ Registro de decisiones técnicas tomadas durante el desarrollo del proyecto. Cad
   - localStorage: Se pierde entre dispositivos/browsers.
 - **Razón**: La más ligera, zero dependencias, API simple, MIT license. El flag en BD garantiza que el tour no reaparece aunque el usuario cambie de dispositivo.
 
+## 20. Escaneo de códigos de barras con html5-qrcode
+
+**html5-qrcode para lectura de códigos desde la cámara**
+
+- **Decisión**: html5-qrcode para escanear códigos de barras (EAN, UPC, QR) directamente desde la cámara del celular. Corre 100% en el browser.
+- **Alternativas descartadas**:
+  - QuaggaJS: Proyecto menos mantenido, API más compleja.
+  - ZXing: Requiere WASM, setup más pesado.
+  - Input manual solamente: Mala UX en móvil, el punto es escanear rápido.
+- **Razón**: Ligera, bien mantenida, soporta múltiples formatos de código, usa `facingMode: "environment"` para cámara trasera. Se complementa con input manual como fallback.
+
+## 21. Catálogo de productos global con precios por tienda
+
+**Product global + ProductPrice por tienda + Open Food Facts**
+
+- **Decisión**: Catálogo de productos compartido entre usuarios (sin `userId`), con precios separados por tienda. Resolución mixta: BD local → Open Food Facts API → manual.
+- **Alternativas descartadas**:
+  - Catálogo por usuario: Cada usuario recrea productos que otros ya escanearon.
+  - Solo Open Food Facts: Cobertura limitada en México, especialmente productos locales.
+  - Solo manual: Tedioso, no escala.
+- **Razón**: El catálogo global se enriquece conforme más usuarios escanean. Open Food Facts aporta datos iniciales (nombre, marca) y el catálogo local compensa su cobertura limitada. Los precios por tienda permiten comparar y se actualizan automáticamente al completar cada compra.
+
 ## Resumen del Stack
 
 | Capa | Tecnología | Versión |
@@ -202,5 +224,6 @@ Registro de decisiones técnicas tomadas durante el desarrollo del proyecto. Cad
 | Testing | Vitest + RTL | 4 |
 | Deploy | Vercel | — |
 | OCR | Tesseract.js | 6 |
+| Barcode | html5-qrcode | 2 |
 | Onboarding | Driver.js | 1 |
 | IA (opcional) | OpenAI API | — |

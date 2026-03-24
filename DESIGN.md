@@ -66,6 +66,35 @@
 - details: [{destinationType, destinationId, groupId?, amount}]
 - groupId vincula gastos a la tarjeta con la que se pagan (para vista "por bolsas")
 
+### Product (catálogo global)
+- id, barcode (único global), name, brand?
+- source: `OPEN_FOOD_FACTS` | `MANUAL`
+- Sin userId — compartido entre todos los usuarios
+- Relación: prices (ProductPrice[]), shoppingItems (ShoppingItem[])
+
+### Store
+- id, name (único), isDefault
+- Seed: Walmart, Oxxo, Soriana (isDefault: true)
+- Usuarios pueden crear tiendas custom (isDefault: false)
+
+### ProductPrice
+- id, productId, storeId, price, updatedAt
+- Constraint único: productId + storeId
+- Permite rastrear precios diferentes por tienda
+
+### ShoppingSession
+- id, userId, storeId, name (auto-generado: "{tienda} {fecha}")
+- status: `IN_PROGRESS` | `COMPLETED`
+- paymentMethodType?, paymentMethodId? (se asignan al completar)
+- estimatedTotal, finalTotal? (después de validación con ticket)
+- expenseId? (referencia al Expense generado al completar)
+- date
+
+### ShoppingItem
+- id, shoppingSessionId, productId?
+- name, barcode?, estimatedPrice, finalPrice?
+- quantity (default: 1), notes?
+
 ## 2. Enums compartidos
 
 ### Frequency
@@ -156,7 +185,54 @@ Tour guiado con Driver.js que se muestra al primer inicio de sesión:
 - **Componente**: `src/components/onboarding-tour.tsx` (Client Component)
 - **Action**: `src/lib/actions/onboarding.ts` (`completeOnboarding`, `getOnboardingStatus`)
 
-## 10. Módulo IA (Opcional)
+## 10. Lista de Compras (Shopping)
+
+Módulo para registrar compras en el supermercado en tiempo real con escaneo de códigos de barras.
+
+### Flujo principal
+
+1. Usuario toca "Nueva compra" → selecciona tienda → crea ShoppingSession (IN_PROGRESS)
+2. Escanea código de barras con la cámara del celular (html5-qrcode)
+   - Busca en Product local (catálogo global por barcode)
+   - Si no existe → busca en Open Food Facts API
+   - Si no existe → formulario manual → crea Product global
+   - Agrega ShoppingItem con estimatedPrice (de ProductPrice para esa tienda, o manual)
+3. Pantalla muestra lista con total acumulado en tiempo real
+4. Usuario puede editar precio/cantidad de cualquier item (ej: frutas por kilo)
+5. Al pagar → escanea ticket con OCR (Tesseract.js, misma infra existente)
+   - Parser extrae líneas de productos con precios
+   - Matching por nombre: asocia líneas del ticket con ShoppingItems
+   - Actualiza finalPrice en cada item
+   - Muestra diff: "Estimado vs Real" con diferencias resaltadas
+6. Usuario selecciona método de pago y confirma → status = COMPLETED
+   - Crea Expense automático (gasto diario) con finalTotal y categoría FOOD
+   - Upsert ProductPrice para cada producto en esa tienda (precio actualizado)
+   - Vincula expenseId en la sesión
+
+### Resolución de productos (orden de búsqueda)
+
+```
+scanBarcode(code, storeId) →
+  1. SELECT FROM Product WHERE barcode = code
+     → encontrado: retorna nombre + precio de ESA tienda (ProductPrice)
+  2. GET https://world.openfoodfacts.org/api/v2/product/{code}
+     → encontrado: crea Product global (source: OPEN_FOOD_FACTS)
+  3. → no encontrado: formulario manual, crea Product global (source: MANUAL)
+```
+
+### Catálogo global de productos
+
+- `Product` no tiene `userId` — es compartido entre todos los usuarios
+- Conforme más usuarios escanean, el catálogo se enriquece
+- `ProductPrice` rastrea precios por tienda, se actualiza al completar cada compra
+
+### Tiendas
+
+- 3 tiendas predefinidas (seed): Walmart, Oxxo, Soriana
+- Usuarios pueden crear tiendas custom
+- Las predefinidas (isDefault: true) no se pueden eliminar
+
+## 11. Módulo IA (Opcional)
 
 Funciona sin IA por defecto. Al configurar API key de OpenAI:
 - Categorización automática de gastos
@@ -165,7 +241,7 @@ Funciona sin IA por defecto. Al configurar API key de OpenAI:
 - Chat para consultas sobre finanzas personales
 - Optimización de distribución de pagos
 
-## 11. Páginas de la App
+## 12. Páginas de la App
 
 | Ruta | Estado | Descripción |
 |---|---|---|
@@ -179,11 +255,14 @@ Funciona sin IA por defecto. Al configurar API key de OpenAI:
 | `/ahorro` | ✅ | Gestión de apartados de ahorro (monto fijo o porcentaje) |
 | `/calendario` | ✅ | Vista calendario mensual/lista con eventos de todos los módulos |
 | `/dispersiones` | ✅ | Dispersión automática con prorrateo por cobro y agrupación por tarjeta |
+| `/compras` | ✅ | Historial de sesiones de compra |
+| `/compras/nueva` | ✅ | Seleccionar tienda e iniciar compra |
+| `/compras/[id]` | ✅ | Lista de compra en vivo con escaneo de códigos + completar con ticket OCR |
 | `/reportes` | 🔲 | Reportería y gráficas |
 | `/ia` | 🔲 | Chat y herramientas IA |
 | `/configuracion` | 🔲 | API keys, preferencias |
 
-## 12. Roadmap / Pendientes
+## 13. Roadmap / Pendientes
 
 ### Próximas funcionalidades
 - **Reportería** — Gasto por tarjeta, totales por periodo, balance general, gráficas de tendencia

@@ -27,3 +27,5 @@ FinanzApp es una app web open source de gestión de finanzas personales construi
 6. **Botones de submit en Server Components**: usar `<button type="submit">` nativo, no el componente `Button` de base-ui.
 7. **Dos tipos de gastos**: `RecurringExpense` (periódicos, participan en dispersión) y `Expense` (diarios/únicos, registro histórico). No mezclar.
 8. **OCR con provider abstracto**: `OcrProvider` interface en `src/lib/ocr/`. Tesseract.js ahora, OpenAI Vision después. No acoplar a un provider específico.
+9. **Catálogo de productos global**: `Product` no tiene `userId`, es compartido entre todos los usuarios. Los precios van en `ProductPrice` (por producto + tienda).
+10. **Escaneo de códigos de barras**: `html5-qrcode` con `facingMode: "environment"`. Resolución: BD local → Open Food Facts → manual.
