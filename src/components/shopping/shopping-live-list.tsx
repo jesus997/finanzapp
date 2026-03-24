@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
-import { addShoppingItem, updateShoppingItem, removeShoppingItem, lookupProduct } from "@/lib/actions/shopping";
 import { BarcodeScanner } from "./barcode-scanner";
 
 interface Item {
@@ -41,7 +40,8 @@ export function ShoppingLiveList({ sessionId, storeId, initialItems, initialTota
     setScannedBarcode(barcode);
     setLoading(true);
     try {
-      const result = await lookupProduct(barcode, storeId);
+      const res = await fetch(`/api/products/lookup?barcode=${encodeURIComponent(barcode)}&storeId=${encodeURIComponent(storeId)}`);
+      const result = await res.json();
       if (result.found) {
         setPrefill({ name: result.name, price: result.price ?? 0, productId: result.productId });
       } else {
@@ -67,16 +67,22 @@ export function ShoppingLiveList({ sessionId, storeId, initialItems, initialTota
 
     setLoading(true);
     try {
-      await addShoppingItem(sessionId, {
-        name,
-        barcode: scannedBarcode ?? undefined,
-        estimatedPrice,
-        quantity,
-        notes,
-        productId: prefill.productId ?? undefined,
+      const res = await fetch("/api/shopping/items", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sessionId,
+          name,
+          barcode: scannedBarcode ?? undefined,
+          estimatedPrice,
+          quantity,
+          notes,
+          productId: prefill.productId ?? undefined,
+        }),
       });
+      const { id } = await res.json();
       const newItem: Item = {
-        id: crypto.randomUUID(),
+        id,
         productId: prefill.productId,
         name,
         barcode: scannedBarcode,
@@ -96,13 +102,21 @@ export function ShoppingLiveList({ sessionId, storeId, initialItems, initialTota
 
   async function handleRemove(itemId: string) {
     setItems((prev) => prev.filter((i) => i.id !== itemId));
-    await removeShoppingItem(itemId);
+    await fetch("/api/shopping/items", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ itemId }),
+    });
   }
 
   async function handleUpdatePrice(itemId: string, newPrice: number) {
     setItems((prev) => prev.map((i) => (i.id === itemId ? { ...i, estimatedPrice: newPrice } : i)));
     setEditingId(null);
-    await updateShoppingItem(itemId, { estimatedPrice: newPrice });
+    await fetch("/api/shopping/items", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ itemId, estimatedPrice: newPrice }),
+    });
   }
 
   return (
