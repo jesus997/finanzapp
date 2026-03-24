@@ -132,7 +132,7 @@ export function ShoppingLiveList({ sessionId, storeId, initialItems, initialTota
         </div>
       </div>
 
-      {/* Camera scanner */}
+      {/* Camera scanner — mobile only (or dev) */}
       {cameraOpen && (
         <BarcodeScanner
           onScan={handleBarcodeScan}
@@ -145,10 +145,18 @@ export function ShoppingLiveList({ sessionId, storeId, initialItems, initialTota
         <div className="space-y-3">
           <button
             onClick={() => setCameraOpen(true)}
-            className="w-full rounded-md bg-primary px-4 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            className="w-full rounded-md bg-primary px-4 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 md:hidden"
           >
             📷 Escanear código de barras
           </button>
+          {process.env.NODE_ENV === "development" && (
+            <button
+              onClick={() => setCameraOpen(true)}
+              className="hidden w-full rounded-md border px-4 py-2 text-sm text-muted-foreground hover:bg-muted md:block"
+            >
+              📷 Escanear (dev only)
+            </button>
+          )}
           <div className="flex gap-2">
             <input
               type="text"
