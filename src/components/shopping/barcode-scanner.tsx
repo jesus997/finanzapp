@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Html5Qrcode } from "html5-qrcode";
 
 interface Props {
   onScan: (barcode: string) => void;
@@ -10,33 +9,55 @@ interface Props {
 
 export function BarcodeScanner({ onScan, onClose }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const scannerRef = useRef<Html5Qrcode | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const scannedRef = useRef(false);
 
   useEffect(() => {
     if (!containerRef.current) return;
 
-    const scannerId = "barcode-scanner";
-    containerRef.current.id = scannerId;
-    const scanner = new Html5Qrcode(scannerId);
-    scannerRef.current = scanner;
+    let scanner: import("html5-qrcode").Html5Qrcode | null = null;
+    let stopped = false;
 
-    scanner
-      .start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 250, height: 150 } },
-        (decodedText) => {
-          scanner.stop().catch(() => {});
-          onScan(decodedText);
-        },
-        () => {},
-      )
-      .catch(() => setError("No se pudo acceder a la cámara"));
-
-    return () => {
-      scanner.stop().catch(() => {});
+    const safeStop = async () => {
+      if (stopped || !scanner) return;
+      stopped = true;
+      try {
+        const state = scanner.getState();
+        if (state === 2 /* SCANNING */ || state === 3 /* PAUSED */) {
+          await scanner.stop();
+        }
+      } catch {
+        // ignore
+      }
+      try { scanner.clear(); } catch { /* ignore */ }
     };
-  }, [onScan]);
+
+    (async () => {
+      try {
+        const { Html5Qrcode } = await import("html5-qrcode");
+        if (stopped) return;
+
+        const scannerId = "barcode-scanner";
+        containerRef.current!.id = scannerId;
+        scanner = new Html5Qrcode(scannerId);
+
+        await scanner.start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: { width: 250, height: 150 } },
+          (decodedText) => {
+            if (scannedRef.current) return;
+            scannedRef.current = true;
+            safeStop().then(() => onScan(decodedText));
+          },
+          () => {},
+        );
+      } catch {
+        if (!stopped) setError("No se pudo acceder a la cámara");
+      }
+    })();
+
+    return () => { safeStop(); };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="space-y-3">
