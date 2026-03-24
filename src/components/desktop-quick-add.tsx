@@ -34,12 +34,13 @@ export function DesktopQuickAdd() {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className={`flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm transition-transform hover:bg-primary/90 ${open ? "rotate-45" : ""}`}
+        className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90"
         aria-label="Agregar nuevo"
       >
-        <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+        <svg className={`size-4 transition-transform ${open ? "rotate-45" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
         </svg>
+        Nuevo
       </button>
       {open && (
         <div className="absolute right-0 top-full mt-2 min-w-[200px] rounded-md border bg-background py-1 shadow-lg">
