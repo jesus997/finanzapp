@@ -22,6 +22,7 @@ export async function Navbar() {
               <Link href="/calendario" className="text-sm hover:underline">Calendario</Link>
               <Link href="/dispersiones" className="text-sm hover:underline">Dispersiones</Link>
               <Link href="/compras" className="text-sm hover:underline">Compras</Link>
+              <Link href="/invitaciones" className="text-sm hover:underline">Invitaciones</Link>
               <span className="text-sm text-muted-foreground">{session.user.name}</span>
               <form action={async () => { "use server"; await signOut(); }}>
                 <button className="text-sm text-muted-foreground hover:underline">Salir</button>

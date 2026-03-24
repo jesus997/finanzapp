@@ -17,6 +17,7 @@ const links = [
   { href: "/calendario", label: "Calendario", icon: "📅" },
   { href: "/dispersiones", label: "Dispersiones", icon: "📊" },
   { href: "/compras", label: "Compras", icon: "🛒" },
+  { href: "/invitaciones", label: "Invitaciones", icon: "✉️" },
 ];
 
 interface Props {

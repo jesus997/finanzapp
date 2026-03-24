@@ -17,9 +17,13 @@ model User {
   image         String?
   currency      String    @default("MXN")
   onboardingCompleted Boolean @default(false)
+  invitedById   String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
+  invitedBy       User?     @relation("UserInvitations", fields: [invitedById], references: [id])
+  invitees        User[]    @relation("UserInvitations")
+  invitations     Invitation[] @relation("InvitationCreator")
   accounts        Account[]
   sessions        Session[]
   incomeSources   IncomeSource[]
@@ -267,6 +271,19 @@ model Expense {
   updatedAt         DateTime          @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ── Invitations ─────────────────────────────────────────────
+
+model Invitation {
+  id        String    @id @default(cuid())
+  code      String    @unique
+  inviterId String
+  usedByEmail String?
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  inviter User @relation("InvitationCreator", fields: [inviterId], references: [id], onDelete: Cascade)
 }
 
 // ── Shopping Module ─────────────────────────────────────────
