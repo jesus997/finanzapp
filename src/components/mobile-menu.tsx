@@ -162,7 +162,11 @@ export function MobileMenu({ user }: Props) {
                 </p>
                 <div className="space-y-1 text-xs text-muted-foreground">
                   <p>Versión <span className="font-medium text-foreground">0.1.0</span></p>
-                  <p>Deploy: <span className="font-medium text-foreground">Vercel</span></p>
+                  {process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA ? (
+                    <p>Deploy: <span className="font-mono font-medium text-foreground">{process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA.slice(0, 7)}</span></p>
+                  ) : (
+                    <p>Deploy: <span className="font-medium text-foreground">local</span></p>
+                  )}
                 </div>
                 <p className="text-[11px] text-muted-foreground leading-relaxed">
                   ⚠️ Proyecto de hobby creado con agentes de IA. No se garantiza su mantenimiento, disponibilidad ni permanencia.
