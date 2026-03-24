@@ -12,6 +12,7 @@ const links = [
   { href: "/ahorro", label: "Ahorro" },
   { href: "/calendario", label: "Calendario" },
   { href: "/dispersiones", label: "Dispersiones" },
+  { href: "/compras", label: "Compras" },
 ];
 
 export function MobileMenu() {

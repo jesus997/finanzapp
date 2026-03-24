@@ -135,6 +135,9 @@ export default async function Home() {
           <Link href="/dispersiones" className={buttonVariants({ variant: "outline", className: "h-16" })}>
             Dispersiones
           </Link>
+          <Link href="/compras" className={buttonVariants({ variant: "outline", className: "h-16" })}>
+            Compras
+          </Link>
         </div>
       </div>
     </div>

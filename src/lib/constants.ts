@@ -131,3 +131,10 @@ export const SAVINGS_TYPE_LABELS: Record<string, string> = {
   FIXED_AMOUNT: "Monto fijo",
   PERCENTAGE: "Porcentaje del ingreso",
 };
+
+export const SHOPPING_SESSION_STATUS_LABELS: Record<string, string> = {
+  IN_PROGRESS: "En progreso",
+  COMPLETED: "Completada",
+};
+
+export const DEFAULT_STORES = ["Walmart", "Oxxo", "Soriana"] as const;
