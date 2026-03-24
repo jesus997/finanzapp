@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { auth, signIn, signOut } from "@/lib/auth";
 import { DesktopNavDropdown } from "@/components/desktop-nav-dropdown";
+import { DesktopQuickAdd } from "@/components/desktop-quick-add";
 
 export async function Navbar() {
   const session = await auth();
@@ -35,6 +36,7 @@ export async function Navbar() {
                 ]}
               />
               <div className="ml-2 flex items-center gap-3 border-l pl-3">
+                <DesktopQuickAdd />
                 <span className="text-sm text-muted-foreground">{session.user.name}</span>
                 <form action={async () => { "use server"; await signOut(); }}>
                   <button className="text-sm text-muted-foreground hover:underline">Salir</button>
