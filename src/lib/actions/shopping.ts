@@ -140,8 +140,6 @@ export async function addShoppingItem(
     where: { id: sessionId },
     data: { estimatedTotal: total },
   });
-
-  revalidatePath(`/compras/${sessionId}`);
 }
 
 export async function updateShoppingItem(
@@ -173,8 +171,6 @@ export async function updateShoppingItem(
     where: { id: item.session.id },
     data: { estimatedTotal: total },
   });
-
-  revalidatePath(`/compras/${item.session.id}`);
 }
 
 export async function removeShoppingItem(itemId: string) {
@@ -195,8 +191,6 @@ export async function removeShoppingItem(itemId: string) {
     where: { id: item.session.id },
     data: { estimatedTotal: total },
   });
-
-  revalidatePath(`/compras/${item.session.id}`);
 }
 
 // ── Product lookup ──────────────────────────────────────────
