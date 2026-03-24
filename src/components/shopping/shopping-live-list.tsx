@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { BarcodeScanner } from "./barcode-scanner";
 
 interface Item {
@@ -21,8 +21,12 @@ interface Props {
   initialTotal: number;
 }
 
+type PriceType = "unit" | "weight" | "fixed";
+
 const fmt = (n: number) =>
   `$${n.toLocaleString("es-MX", { minimumFractionDigits: 2 })}`;
+
+const round2 = (n: number) => Math.round(n * 100) / 100;
 
 export function ShoppingLiveList({ sessionId, storeId, initialItems, initialTotal }: Props) {
   const [items, setItems] = useState<Item[]>(initialItems);
@@ -31,9 +35,23 @@ export function ShoppingLiveList({ sessionId, storeId, initialItems, initialTota
   const [loading, setLoading] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [scannedBarcode, setScannedBarcode] = useState<string | null>(null);
+  const [showBarcodeInput, setShowBarcodeInput] = useState(false);
   const [prefill, setPrefill] = useState<{ name: string; price: number; productId: string | null }>({ name: "", price: 0, productId: null });
 
+  // Add item form state
+  const [priceType, setPriceType] = useState<PriceType>("unit");
+  const [unitPrice, setUnitPrice] = useState("");
+  const [quantity, setQuantity] = useState("1");
+  const [weightKg, setWeightKg] = useState("");
+
   const total = items.reduce((s, i) => s + i.estimatedPrice * i.quantity, 0);
+
+  const calculatedTotal = (() => {
+    const price = Number(unitPrice) || 0;
+    if (priceType === "unit") return round2(price * (Number(quantity) || 1));
+    if (priceType === "weight") return round2(price * (Number(weightKg) || 0));
+    return price; // fixed
+  })();
 
   const handleBarcodeScan = useCallback(async (barcode: string) => {
     setCameraOpen(false);
@@ -44,8 +62,10 @@ export function ShoppingLiveList({ sessionId, storeId, initialItems, initialTota
       const result = await res.json();
       if (result.found) {
         setPrefill({ name: result.name, price: result.price ?? 0, productId: result.productId });
+        setUnitPrice(result.price ? String(result.price) : "");
       } else {
         setPrefill({ name: "", price: 0, productId: null });
+        setUnitPrice("");
       }
       setManualMode(true);
     } finally {
@@ -59,11 +79,32 @@ export function ShoppingLiveList({ sessionId, storeId, initialItems, initialTota
     await handleBarcodeScan(barcode);
   }
 
+  function resetForm() {
+    setManualMode(false);
+    setScannedBarcode(null);
+    setShowBarcodeInput(false);
+    setPrefill({ name: "", price: 0, productId: null });
+    setPriceType("unit");
+    setUnitPrice("");
+    setQuantity("1");
+    setWeightKg("");
+  }
+
+  function openManualAdd() {
+    resetForm();
+    setManualMode(true);
+  }
+
   async function handleAddItem(formData: FormData) {
     const name = formData.get("name") as string;
-    const estimatedPrice = Number(formData.get("estimatedPrice"));
-    const quantity = Number(formData.get("quantity") || 1);
-    const notes = (formData.get("notes") as string) || undefined;
+    if (!name || calculatedTotal <= 0) return;
+
+    // For unit: save unit price + quantity. For weight/fixed: save total + qty 1
+    const savePrice = priceType === "unit" ? (Number(unitPrice) || 0) : calculatedTotal;
+    const saveQty = priceType === "unit" ? (Number(quantity) || 1) : 1;
+    const notes = priceType === "weight"
+      ? `${weightKg}kg a ${fmt(Number(unitPrice))}/kg`
+      : (formData.get("notes") as string) || undefined;
 
     setLoading(true);
     try {
@@ -74,27 +115,24 @@ export function ShoppingLiveList({ sessionId, storeId, initialItems, initialTota
           sessionId,
           name,
           barcode: scannedBarcode ?? undefined,
-          estimatedPrice,
-          quantity,
+          estimatedPrice: savePrice,
+          quantity: saveQty,
           notes,
           productId: prefill.productId ?? undefined,
         }),
       });
       const { id } = await res.json();
-      const newItem: Item = {
+      setItems((prev) => [...prev, {
         id,
         productId: prefill.productId,
         name,
         barcode: scannedBarcode,
-        estimatedPrice,
+        estimatedPrice: savePrice,
         finalPrice: null,
-        quantity,
+        quantity: saveQty,
         notes: notes ?? null,
-      };
-      setItems((prev) => [...prev, newItem]);
-      setManualMode(false);
-      setScannedBarcode(null);
-      setPrefill({ name: "", price: 0, productId: null });
+      }]);
+      resetForm();
     } finally {
       setLoading(false);
     }
@@ -161,7 +199,7 @@ export function ShoppingLiveList({ sessionId, storeId, initialItems, initialTota
             <input
               type="text"
               inputMode="numeric"
-              placeholder="O escribe el código manualmente"
+              placeholder="Buscar por código de barras"
               value={scannedBarcode ?? ""}
               onChange={(e) => setScannedBarcode(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleManualBarcode()}
@@ -176,10 +214,10 @@ export function ShoppingLiveList({ sessionId, storeId, initialItems, initialTota
             </button>
           </div>
           <button
-            onClick={() => { setManualMode(true); setScannedBarcode(null); setPrefill({ name: "", price: 0, productId: null }); }}
+            onClick={openManualAdd}
             className="w-full rounded-md border px-4 py-2 text-sm hover:bg-muted"
           >
-            + Agregar producto sin código
+            + Agregar producto
           </button>
         </div>
       )}
@@ -193,6 +231,7 @@ export function ShoppingLiveList({ sessionId, storeId, initialItems, initialTota
           {scannedBarcode && (
             <p className="text-xs text-muted-foreground">Código: {scannedBarcode}</p>
           )}
+
           <input
             name="name"
             defaultValue={prefill.name}
@@ -200,47 +239,146 @@ export function ShoppingLiveList({ sessionId, storeId, initialItems, initialTota
             required
             className="w-full rounded-md border px-3 py-2 text-sm"
           />
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs text-muted-foreground">Precio</label>
+
+          {/* Barcode (optional) */}
+          {!scannedBarcode && (
+            showBarcodeInput ? (
               <input
-                name="estimatedPrice"
+                type="text"
+                inputMode="numeric"
+                placeholder="Código de barras (opcional)"
+                value={scannedBarcode ?? ""}
+                onChange={(e) => setScannedBarcode(e.target.value)}
+                className="w-full rounded-md border px-3 py-2 text-sm"
+              />
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowBarcodeInput(true)}
+                className="text-xs text-primary hover:underline"
+              >
+                + Agregar código de barras
+              </button>
+            )
+          )}
+
+          {/* Price type selector */}
+          <div className="flex gap-1 rounded-md border p-1">
+            {([
+              ["unit", "Por unidad"],
+              ["weight", "Por peso"],
+              ["fixed", "Precio fijo"],
+            ] as const).map(([value, label]) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setPriceType(value)}
+                className={`flex-1 rounded px-2 py-1.5 text-xs font-medium transition-colors ${priceType === value ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {/* Price inputs based on type */}
+          {priceType === "unit" && (
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-muted-foreground">Precio unitario</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={unitPrice}
+                  onChange={(e) => setUnitPrice(e.target.value)}
+                  placeholder="0.00"
+                  required
+                  className="w-full rounded-md border px-3 py-2 text-sm"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">Cantidad</label>
+                <input
+                  type="number"
+                  min="1"
+                  value={quantity}
+                  onChange={(e) => setQuantity(e.target.value)}
+                  className="w-full rounded-md border px-3 py-2 text-sm"
+                />
+              </div>
+            </div>
+          )}
+
+          {priceType === "weight" && (
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-muted-foreground">Precio por kg</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={unitPrice}
+                  onChange={(e) => setUnitPrice(e.target.value)}
+                  placeholder="0.00"
+                  required
+                  className="w-full rounded-md border px-3 py-2 text-sm"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">Peso (kg)</label>
+                <input
+                  type="number"
+                  step="0.001"
+                  min="0.001"
+                  value={weightKg}
+                  onChange={(e) => setWeightKg(e.target.value)}
+                  placeholder="ej: 0.5"
+                  required
+                  className="w-full rounded-md border px-3 py-2 text-sm"
+                />
+              </div>
+            </div>
+          )}
+
+          {priceType === "fixed" && (
+            <div>
+              <label className="text-xs text-muted-foreground">Precio total</label>
+              <input
                 type="number"
                 step="0.01"
                 min="0"
-                defaultValue={prefill.price || ""}
+                value={unitPrice}
+                onChange={(e) => setUnitPrice(e.target.value)}
                 placeholder="0.00"
                 required
                 className="w-full rounded-md border px-3 py-2 text-sm"
               />
             </div>
-            <div>
-              <label className="text-xs text-muted-foreground">Cantidad</label>
-              <input
-                name="quantity"
-                type="number"
-                min="1"
-                defaultValue={1}
-                className="w-full rounded-md border px-3 py-2 text-sm"
-              />
+          )}
+
+          {priceType !== "fixed" && (
+            <input name="notes" placeholder="Notas (opcional)" className="w-full rounded-md border px-3 py-2 text-sm" />
+          )}
+
+          {/* Calculated total */}
+          {calculatedTotal > 0 && (
+            <div className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2">
+              <span className="text-xs text-muted-foreground">Total</span>
+              <span className="text-sm font-semibold">{fmt(calculatedTotal)}</span>
             </div>
-          </div>
-          <input
-            name="notes"
-            placeholder="Notas (ej: aprox 1.5kg)"
-            className="w-full rounded-md border px-3 py-2 text-sm"
-          />
+          )}
+
           <div className="flex gap-2">
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || calculatedTotal <= 0}
               className="flex-1 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
             >
               {loading ? "Agregando..." : "Agregar"}
             </button>
             <button
               type="button"
-              onClick={() => { setManualMode(false); setScannedBarcode(null); setPrefill({ name: "", price: 0, productId: null }); }}
+              onClick={resetForm}
               className="rounded-md border px-4 py-2 text-sm hover:bg-muted"
             >
               Cancelar
@@ -257,7 +395,7 @@ export function ShoppingLiveList({ sessionId, storeId, initialItems, initialTota
               <p className="text-sm font-medium truncate">{item.name}</p>
               <div className="flex gap-2 text-xs text-muted-foreground">
                 {item.quantity > 1 && <span>×{item.quantity}</span>}
-                {item.notes && <span>· {item.notes}</span>}
+                {item.notes && <span>{item.quantity > 1 ? "· " : ""}{item.notes}</span>}
               </div>
             </div>
             {editingId === item.id ? (
