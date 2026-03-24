@@ -16,7 +16,11 @@ const quickActions = [
   { href: "/compras/nueva", label: "Compra", icon: "🛒" },
 ];
 
-export function MobileBottomBar() {
+interface Props {
+  user: { name: string | null; image: string | null };
+}
+
+export function MobileBottomBar({ user }: Props) {
   const [fabOpen, setFabOpen] = useState(false);
   const pathname = usePathname();
 
@@ -44,7 +48,7 @@ export function MobileBottomBar() {
       {/* Bottom bar */}
       <div className="fixed bottom-0 left-0 right-0 z-30 border-t bg-background pb-[env(safe-area-inset-bottom)]">
         <div className="flex h-14 items-center justify-around px-2">
-          <MobileMenu />
+          <MobileMenu user={user} />
 
           <Link
             href="/"

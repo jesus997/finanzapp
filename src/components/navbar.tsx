@@ -27,11 +27,7 @@ export async function Navbar() {
                 <button className="text-sm text-muted-foreground hover:underline">Salir</button>
               </form>
             </div>
-            <div className="flex items-center md:hidden">
-              <form action={async () => { "use server"; await signOut(); }}>
-                <button className="text-xs text-muted-foreground hover:underline">Salir</button>
-              </form>
-            </div>
+            {/* Mobile: sign out is in the drawer menu */}
           </>
         ) : (
           <form action={async () => { "use server"; await signIn(); }}>

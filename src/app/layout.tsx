@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { auth } from "@/lib/auth";
 import { Navbar } from "@/components/navbar";
 import { MobileBottomBar } from "@/components/mobile-bottom-bar";
 import "./globals.css";
@@ -23,11 +24,16 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await auth();
+  const user = session?.user
+    ? { name: session.user.name ?? null, image: session.user.image ?? null }
+    : null;
+
   return (
     <html
       lang="es"
@@ -38,7 +44,7 @@ export default function RootLayout({
         <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 pb-20 md:pb-6">
           {children}
         </main>
-        <MobileBottomBar />
+        {user && <MobileBottomBar user={user} />}
       </body>
     </html>
   );
