@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { auth, signIn, signOut } from "@/lib/auth";
+import { DesktopNavDropdown } from "@/components/desktop-nav-dropdown";
 
 export async function Navbar() {
   const session = await auth();
@@ -12,23 +13,35 @@ export async function Navbar() {
         </Link>
         {session?.user ? (
           <>
-            <div className="hidden items-center gap-4 md:flex">
-              <Link href="/ingresos" className="text-sm hover:underline">Ingresos</Link>
-              <Link href="/tarjetas" className="text-sm hover:underline">Tarjetas</Link>
-              <Link href="/prestamos" className="text-sm hover:underline">Préstamos</Link>
-              <Link href="/gastos" className="text-sm hover:underline">Gastos</Link>
-              <Link href="/gastos-diarios" className="text-sm hover:underline">Gastos diarios</Link>
-              <Link href="/ahorro" className="text-sm hover:underline">Ahorro</Link>
-              <Link href="/calendario" className="text-sm hover:underline">Calendario</Link>
-              <Link href="/dispersiones" className="text-sm hover:underline">Dispersiones</Link>
-              <Link href="/compras" className="text-sm hover:underline">Compras</Link>
-              <Link href="/invitaciones" className="text-sm hover:underline">Invitaciones</Link>
-              <span className="text-sm text-muted-foreground">{session.user.name}</span>
-              <form action={async () => { "use server"; await signOut(); }}>
-                <button className="text-sm text-muted-foreground hover:underline">Salir</button>
-              </form>
+            <div className="hidden items-center gap-1 md:flex">
+              <Link href="/ingresos" className="rounded-md px-3 py-1.5 text-sm hover:bg-muted">Ingresos</Link>
+              <Link href="/tarjetas" className="rounded-md px-3 py-1.5 text-sm hover:bg-muted">Tarjetas</Link>
+              <Link href="/prestamos" className="rounded-md px-3 py-1.5 text-sm hover:bg-muted">Préstamos</Link>
+              <DesktopNavDropdown
+                label="Gastos"
+                items={[
+                  { href: "/gastos", label: "Periódicos" },
+                  { href: "/gastos-diarios", label: "Diarios" },
+                  { href: "/compras", label: "Compras" },
+                ]}
+              />
+              <DesktopNavDropdown
+                label="Más"
+                items={[
+                  { href: "/ahorro", label: "Ahorro" },
+                  { href: "/calendario", label: "Calendario" },
+                  { href: "/dispersiones", label: "Dispersiones" },
+                  { href: "/invitaciones", label: "Invitaciones" },
+                ]}
+              />
+              <div className="ml-2 flex items-center gap-3 border-l pl-3">
+                <span className="text-sm text-muted-foreground">{session.user.name}</span>
+                <form action={async () => { "use server"; await signOut(); }}>
+                  <button className="text-sm text-muted-foreground hover:underline">Salir</button>
+                </form>
+              </div>
             </div>
-            {/* Mobile: sign out is in the drawer menu */}
+            {/* Mobile: navigation is in the drawer menu */}
           </>
         ) : (
           <form action={async () => { "use server"; await signIn(); }}>
