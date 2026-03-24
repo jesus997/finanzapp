@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { auth, signIn, signOut } from "@/lib/auth";
-import { MobileMenu } from "@/components/mobile-menu";
 
 export async function Navbar() {
   const session = await auth();
@@ -28,11 +27,10 @@ export async function Navbar() {
                 <button className="text-sm text-muted-foreground hover:underline">Salir</button>
               </form>
             </div>
-            <div className="flex items-center gap-3 md:hidden">
+            <div className="flex items-center md:hidden">
               <form action={async () => { "use server"; await signOut(); }}>
                 <button className="text-xs text-muted-foreground hover:underline">Salir</button>
               </form>
-              <MobileMenu />
             </div>
           </>
         ) : (

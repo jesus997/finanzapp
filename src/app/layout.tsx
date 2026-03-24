@@ -1,6 +1,7 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Navbar } from "@/components/navbar";
+import { MobileBottomBar } from "@/components/mobile-bottom-bar";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -18,6 +19,10 @@ export const metadata: Metadata = {
   description: "Gestión de finanzas personales",
 };
 
+export const viewport: Viewport = {
+  viewportFit: "cover",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -30,9 +35,10 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col font-sans">
         <Navbar />
-        <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6">
+        <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 pb-20 md:pb-6">
           {children}
         </main>
+        <MobileBottomBar />
       </body>
     </html>
   );
