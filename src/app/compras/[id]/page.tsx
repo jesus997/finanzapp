@@ -104,23 +104,16 @@ export default async function ShoppingSessionPage({ params }: { params: Promise<
       />
 
       {session.items.length > 0 && (
-        <details className="rounded-xl border p-4">
-          <summary className="cursor-pointer text-sm font-medium">
-            Completar compra
-          </summary>
-          <div className="mt-4">
-            <CompleteShoppingForm
-              sessionId={session.id}
-              items={session.items.map((i) => ({
-                id: i.id,
-                name: i.name,
-                estimatedPrice: i.estimatedPrice,
-                quantity: i.quantity,
-              }))}
-              paymentOptions={paymentOptions}
-            />
-          </div>
-        </details>
+        <CompleteShoppingForm
+          sessionId={session.id}
+          items={session.items.map((i) => ({
+            id: i.id,
+            name: i.name,
+            estimatedPrice: i.estimatedPrice,
+            quantity: i.quantity,
+          }))}
+          paymentOptions={paymentOptions}
+        />
       )}
     </div>
   );
