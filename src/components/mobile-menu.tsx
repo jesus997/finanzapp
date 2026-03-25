@@ -22,9 +22,10 @@ const links = [
 
 interface Props {
   user: { name: string | null; image: string | null };
+  isAdmin?: boolean;
 }
 
-export function MobileMenu({ user }: Props) {
+export function MobileMenu({ user, isAdmin }: Props) {
   const [open, setOpen] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
   const pathname = usePathname();
@@ -146,6 +147,15 @@ export function MobileMenu({ user }: Props) {
                   </Link>
                 );
               })}
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${pathname.startsWith("/admin") ? "bg-primary/10 font-medium text-primary" : "hover:bg-muted"}`}
+                >
+                  <span className="text-base">⚙️</span>
+                  Admin
+                </Link>
+              )}
             </div>
           </div>
 

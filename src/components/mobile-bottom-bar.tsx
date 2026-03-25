@@ -18,9 +18,10 @@ const quickActions = [
 
 interface Props {
   user: { name: string | null; image: string | null };
+  isAdmin?: boolean;
 }
 
-export function MobileBottomBar({ user }: Props) {
+export function MobileBottomBar({ user, isAdmin }: Props) {
   const [fabOpen, setFabOpen] = useState(false);
   const pathname = usePathname();
 
@@ -48,7 +49,7 @@ export function MobileBottomBar({ user }: Props) {
       {/* Bottom bar */}
       <div className="fixed bottom-0 left-0 right-0 z-30 border-t bg-background pb-[env(safe-area-inset-bottom)]">
         <div className="flex h-14 items-center justify-around px-2">
-          <MobileMenu user={user} />
+          <MobileMenu user={user} isAdmin={isAdmin} />
 
           <Link
             href="/"

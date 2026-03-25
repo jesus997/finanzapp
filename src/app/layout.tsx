@@ -25,6 +25,15 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
+function checkAdmin(email: string | null | undefined): boolean {
+  if (!email) return false;
+  const admins = (process.env.ADMIN_EMAILS ?? "")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+  return admins.includes(email.toLowerCase());
+}
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -34,6 +43,7 @@ export default async function RootLayout({
   const user = session?.user
     ? { name: session.user.name ?? null, image: session.user.image ?? null }
     : null;
+  const admin = checkAdmin(session?.user?.email);
 
   return (
     <html
@@ -46,7 +56,7 @@ export default async function RootLayout({
         <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 pb-20 md:pb-6">
           {children}
         </main>
-        {user && <MobileBottomBar user={user} />}
+        {user && <MobileBottomBar user={user} isAdmin={admin} />}
       </body>
     </html>
   );

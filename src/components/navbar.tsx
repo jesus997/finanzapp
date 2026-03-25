@@ -3,8 +3,18 @@ import { auth, signIn, signOut } from "@/lib/auth";
 import { DesktopNavDropdown } from "@/components/desktop-nav-dropdown";
 import { DesktopQuickAdd } from "@/components/desktop-quick-add";
 
+function isAdmin(email: string | null | undefined): boolean {
+  if (!email) return false;
+  const admins = (process.env.ADMIN_EMAILS ?? "")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+  return admins.includes(email.toLowerCase());
+}
+
 export async function Navbar() {
   const session = await auth();
+  const admin = isAdmin(session?.user?.email);
 
   return (
     <nav className="relative border-b bg-background">
@@ -33,6 +43,7 @@ export async function Navbar() {
                   { href: "/calendario", label: "Calendario" },
                   { href: "/dispersiones", label: "Dispersiones" },
                   { href: "/invitaciones", label: "Invitaciones" },
+                  ...(admin ? [{ href: "/admin", label: "⚙️ Admin" }] : []),
                 ]}
               />
               <div className="ml-2 flex items-center gap-3 border-l pl-3">
