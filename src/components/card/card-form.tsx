@@ -77,6 +77,10 @@ export function CardForm({ card }: Props) {
         />
       </div>
 
+      <p className="text-xs text-muted-foreground">
+        El nombre, banco y últimos 4 dígitos son solo para identificar la tarjeta fácilmente.
+      </p>
+
       <div className="space-y-2">
         <Label htmlFor="type">Tipo</Label>
         <Select
@@ -94,6 +98,9 @@ export function CardForm({ card }: Props) {
             ))}
           </SelectContent>
         </Select>
+        <p className="text-xs text-muted-foreground">
+          Crédito: los gastos asociados se consideran deuda. Débito: se tratan como gasto directo.
+        </p>
       </div>
 
       <div className="space-y-2">
@@ -110,6 +117,9 @@ export function CardForm({ card }: Props) {
             ))}
           </SelectContent>
         </Select>
+        <p className="text-xs text-muted-foreground">
+          Solo para identificar visualmente la tarjeta (Visa, Mastercard, etc.).
+        </p>
       </div>
 
       {isCredit && (
