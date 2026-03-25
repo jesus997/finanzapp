@@ -18,6 +18,7 @@ Aplicación web open source para gestión de finanzas personales. Controla tus t
 - **Diseño responsive** — Optimizado para uso en móvil con menú hamburguesa, cards en mobile y tablas en desktop.
 - **Navegación mobile nativa** — Bottom bar con menú, accesos directos y FAB (+). Drawer lateral con swipe, perfil de usuario e info de la app. Barra de progreso global durante navegaciones.
 - **Onboarding** — Tutorial guiado para nuevos usuarios que explica el concepto de la app y cómo usarla. Se muestra una sola vez.
+- **Panel de administración** — Estadísticas globales, lista de usuarios, invitaciones del sistema, gestión del catálogo de productos. Acceso controlado por `ADMIN_EMAILS`.
 - **Reportería** — Gasto por tarjeta, totales por periodo, balance general *(próximamente)*
 - **Integración IA (opcional)** — Categorización, recomendaciones, detección de gastos hormiga vía OpenAI *(próximamente)*
 
@@ -91,6 +92,11 @@ AUTH_GITHUB_SECRET="tu-client-secret"
 5. Genera el secret de auth:
 ```bash
 npx auth secret
+```
+
+### Administración (opcional)
+```
+ADMIN_EMAILS="tu-email@ejemplo.com"
 ```
 
 ### IA (opcional)

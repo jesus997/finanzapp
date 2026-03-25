@@ -276,6 +276,10 @@ Funciona sin IA por defecto. Al configurar API key de OpenAI:
 | `/compras/[id]` | ✅ | Lista de compra en vivo con escaneo de códigos + completar con ticket OCR |
 | `/invitaciones` | ✅ | Gestión de invitaciones (generar, copiar, eliminar) |
 | `/invitar/[code]` | ✅ | Landing de invitación con nombre/foto del invitador |
+| `/admin` | ✅ | Panel admin: estadísticas globales |
+| `/admin/usuarios` | ✅ | Lista de usuarios con invitaciones enviadas/usadas |
+| `/admin/invitaciones` | ✅ | Todas las invitaciones del sistema con estado |
+| `/admin/productos` | ✅ | Catálogo global de productos: editar, eliminar |
 | `/reportes` | 🔲 | Reportería y gráficas |
 | `/ia` | 🔲 | Chat y herramientas IA |
 | `/configuracion` | 🔲 | API keys, preferencias |
@@ -308,7 +312,18 @@ Sistema de invitación por enlace único para controlar el acceso de nuevos usua
 - **Loading skeletons**: todas las rutas tienen `loading.tsx` con esqueletos animados
 - **Dashboard interactivo**: tarjetas de resumen son links clickeables, eventos próximos abren dialog con detalle completo
 
-## 15. Roadmap / Pendientes
+## 15. Panel de Administración
+
+Panel exclusivo para administradores del sistema, protegido por `ADMIN_EMAILS` (variable de entorno con emails separados por coma).
+
+- **Resumen**: contadores globales (usuarios, invitaciones usadas/total, productos, tiendas, sesiones de compra)
+- **Usuarios**: lista con foto, nombre, email, quién los invitó, invitaciones enviadas/usadas, fecha de registro
+- **Invitaciones**: todas las invitaciones del sistema con código, invitador, estado (pendiente/usada), quién la usó
+- **Productos**: catálogo global con edición inline (nombre, marca, descripción) y eliminación
+
+El layout `/admin` verifica el email del usuario contra `ADMIN_EMAILS` y redirige a `/` si no es admin. No se requiere campo `role` en la BD.
+
+## 16. Roadmap / Pendientes
 
 ### Próximas funcionalidades
 - **Reportería** — Gasto por tarjeta, totales por periodo, balance general, gráficas de tendencia
