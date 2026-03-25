@@ -127,8 +127,9 @@ export function MobileMenu({ user, isAdmin }: Props) {
           className={`absolute inset-y-0 left-0 flex w-[280px] flex-col bg-background shadow-xl transition-transform duration-300 ${open ? "translate-x-0" : "-translate-x-full"}`}
         >
           {/* Header */}
-          <div className="flex h-14 items-center border-b px-4">
-            <img src="/logo.svg" alt="FinanzApp" className="h-8 w-auto" />
+          <div className="flex h-14 items-center gap-2 border-b px-4">
+            <img src="/logo-icon.svg" alt="" className="size-7" />
+            <span className="text-lg font-semibold">FinanzApp</span>
           </div>
 
           {/* Nav links */}

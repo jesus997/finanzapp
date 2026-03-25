@@ -1,8 +1,8 @@
 import Link from "next/link";
-import Image from "next/image";
 import { auth, signIn, signOut } from "@/lib/auth";
 import { DesktopNavDropdown } from "@/components/desktop-nav-dropdown";
 import { DesktopQuickAdd } from "@/components/desktop-quick-add";
+import { BetaBadge } from "@/components/beta-badge";
 
 function isAdmin(email: string | null | undefined): boolean {
   if (!email) return false;
@@ -21,7 +21,9 @@ export async function Navbar() {
     <nav className="relative border-b bg-background">
       <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
         <Link href="/" className="flex items-center gap-2">
-          <Image src="/logo.svg" alt="FinanzApp" width={140} height={48} className="h-8 w-auto" priority />
+          <img src="/logo-icon.svg" alt="" className="size-7" />
+          <span className="text-lg font-semibold">FinanzApp</span>
+          <BetaBadge />
         </Link>
         {session?.user ? (
           <>

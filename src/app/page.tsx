@@ -14,8 +14,10 @@ export default async function Home() {
 
   if (!session?.user) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center gap-6">
-        <img src="/logo.svg" alt="FinanzApp" className="h-16 w-auto" />
+      <div className="flex flex-1 flex-col items-center justify-center gap-4">
+        <img src="/logo-icon.svg" alt="" className="size-16" />
+        <h1 className="text-3xl font-bold">FinanzApp</h1>
+        <p className="text-muted-foreground">Gestión de finanzas personales</p>
         <p className="text-sm text-muted-foreground">Inicia sesión para comenzar</p>
       </div>
     );
