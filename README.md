@@ -197,7 +197,9 @@ Antes de contribuir, lee los siguientes documentos:
 
 ## Licencia
 
-MIT
+[Business Source License 1.1](./LICENSE)
+
+Uso libre para fines no comerciales. El uso comercial (vender, cobrar, ofrecer como servicio de pago) requiere una licencia comercial del autor. A partir del 25 de marzo de 2030, el código se libera bajo GPLv2.
 
 ## Disclaimer
 

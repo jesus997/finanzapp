@@ -44,7 +44,11 @@ export default function TermsPage() {
 
       <h2>6. Propiedad intelectual</h2>
       <p>
-        FinanzApp es software open source bajo licencia MIT. El código fuente está disponible en{" "}
+        FinanzApp es software open source bajo{" "}
+        <a href="https://github.com/jesus997/finanzapp/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+          Business Source License 1.1
+        </a>.
+        El uso comercial requiere una licencia del autor. El código fuente está disponible en{" "}
         <a href="https://github.com/jesus997/finanzapp" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
           GitHub
         </a>.
