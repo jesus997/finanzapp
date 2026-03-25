@@ -68,15 +68,16 @@
 - groupId vincula gastos a la tarjeta con la que se pagan (para vista "por bolsas")
 
 ### Product (catálogo global)
-- id, barcode (único global), name, brand?
+- id, barcode (único global), name, brand?, description?
 - source: `OPEN_FOOD_FACTS` | `MANUAL`
 - Sin userId — compartido entre todos los usuarios
 - Relación: prices (ProductPrice[]), shoppingItems (ShoppingItem[])
 
 ### Store
-- id, name (único), isDefault
+- id, name (único), address?, latitude?, longitude?, isDefault
 - Seed: Walmart, Oxxo, Soriana (isDefault: true)
 - Usuarios pueden crear tiendas custom (isDefault: false)
+- Dirección y coordenadas opcionales, detectables por geolocalización
 
 ### ProductPrice
 - id, productId, storeId, price, updatedAt
@@ -155,6 +156,7 @@ El home muestra estadísticas rápidas al usuario autenticado:
 
 - **Resumen del mes**: 4 tarjetas — ingresos, gastos (periódicos + diarios), préstamos, balance proyectado (ingresos - gastos - préstamos)
 - **Ahorro y deuda**: 2 tarjetas — ahorro acumulado total, deuda total (suma de saldos restantes de préstamos)
+- **Compra en progreso**: si hay sesiones de compra activas, muestra banner con la más reciente (nombre, productos, total) y botón para continuar. Si hay más de una, link para ver todas.
 - **Próximos pagos e ingresos**: hasta 5 eventos desde hoy, con colores por tipo y monto
 - **Accesos rápidos**: grid de botones a cada módulo
 
@@ -242,7 +244,8 @@ scanBarcode(code, storeId) →
 ### Tiendas
 
 - 3 tiendas predefinidas (seed): Walmart, Oxxo, Soriana
-- Usuarios pueden crear tiendas custom
+- Usuarios pueden crear tiendas custom con dirección y coordenadas opcionales
+- Geolocalización: detecta ubicación actual y resuelve dirección vía Nominatim (OpenStreetMap)
 - Las predefinidas (isDefault: true) no se pueden eliminar
 
 ## 11. Módulo IA (Opcional)
