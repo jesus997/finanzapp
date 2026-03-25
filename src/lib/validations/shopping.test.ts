@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { shoppingSessionSchema, shoppingItemSchema, storeSchema } from "./shopping";
+import { shoppingSessionSchema, shoppingItemSchema, storeSchema, productSchema } from "./shopping";
 
 describe("shoppingSessionSchema", () => {
   it("accepts valid session", () => {
@@ -89,6 +89,56 @@ describe("storeSchema", () => {
 
   it("rejects empty name", () => {
     const result = storeSchema.safeParse({ name: "" });
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts store with address and coordinates", () => {
+    const result = storeSchema.safeParse({
+      name: "Walmart Sendero",
+      address: "Av. Sendero Norte 123, Monterrey",
+      latitude: 25.7246,
+      longitude: -100.3133,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects invalid latitude", () => {
+    const result = storeSchema.safeParse({ name: "Test", latitude: 100 });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects invalid longitude", () => {
+    const result = storeSchema.safeParse({ name: "Test", longitude: 200 });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("productSchema", () => {
+  it("accepts valid product", () => {
+    const result = productSchema.safeParse({
+      name: "Coca-Cola 600ml",
+      barcode: "7501055300120",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts product with optional fields", () => {
+    const result = productSchema.safeParse({
+      name: "Coca-Cola 600ml",
+      barcode: "7501055300120",
+      brand: "Coca-Cola",
+      description: "Refresco de cola 600ml botella PET",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects empty name", () => {
+    const result = productSchema.safeParse({ name: "", barcode: "123" });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects empty barcode", () => {
+    const result = productSchema.safeParse({ name: "Test", barcode: "" });
     expect(result.success).toBe(false);
   });
 });

@@ -21,6 +21,18 @@ export type ShoppingItemInput = z.infer<typeof shoppingItemSchema>;
 
 export const storeSchema = z.object({
   name: z.string().min(1, "El nombre es requerido"),
+  address: z.string().optional(),
+  latitude: z.coerce.number().min(-90).max(90).optional(),
+  longitude: z.coerce.number().min(-180).max(180).optional(),
 });
 
 export type StoreInput = z.infer<typeof storeSchema>;
+
+export const productSchema = z.object({
+  name: z.string().min(1, "El nombre es requerido"),
+  barcode: z.string().min(1, "El código de barras es requerido"),
+  brand: z.string().optional(),
+  description: z.string().optional(),
+});
+
+export type ProductInput = z.infer<typeof productSchema>;

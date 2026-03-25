@@ -19,10 +19,22 @@ export async function getStores() {
 }
 
 export async function createStore(formData: FormData) {
-  const parsed = storeSchema.safeParse({ name: formData.get("name") });
+  const parsed = storeSchema.safeParse({
+    name: formData.get("name"),
+    address: formData.get("address") || undefined,
+    latitude: formData.get("latitude") || undefined,
+    longitude: formData.get("longitude") || undefined,
+  });
   if (!parsed.success) throw new Error(parsed.error.issues[0].message);
 
-  await prisma.store.create({ data: { name: parsed.data.name } });
+  await prisma.store.create({
+    data: {
+      name: parsed.data.name,
+      address: parsed.data.address ?? null,
+      latitude: parsed.data.latitude ?? null,
+      longitude: parsed.data.longitude ?? null,
+    },
+  });
   revalidatePath("/compras");
 }
 
@@ -208,6 +220,7 @@ export async function lookupProduct(barcode: string, storeId: string) {
       productId: product.id,
       name: product.name,
       brand: product.brand,
+      description: product.description,
       price: product.prices[0] ? Number(product.prices[0].price) : null,
     };
   }
@@ -233,6 +246,7 @@ export async function lookupProduct(barcode: string, storeId: string) {
           productId: created.id,
           name,
           brand,
+          description: null,
           price: null,
         };
       }

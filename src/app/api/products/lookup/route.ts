@@ -20,6 +20,7 @@ export async function GET(req: NextRequest) {
       productId: product.id,
       name: product.name,
       brand: product.brand,
+      description: product.description,
       price: product.prices[0] ? Number(product.prices[0].price) : null,
     });
   }
@@ -42,6 +43,7 @@ export async function GET(req: NextRequest) {
           productId: created.id,
           name,
           brand,
+          description: null,
           price: null,
         });
       }

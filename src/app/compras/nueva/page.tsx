@@ -1,4 +1,5 @@
 import { getStores, createShoppingSession, createStore } from "@/lib/actions/shopping";
+import { NewStoreForm } from "@/components/shopping/new-store-form";
 
 export default async function NewShoppingPage() {
   const stores = await getStores();
@@ -16,7 +17,12 @@ export default async function NewShoppingPage() {
               className="flex cursor-pointer items-center gap-3 rounded-xl border p-4 hover:bg-muted/50 has-[:checked]:border-primary has-[:checked]:bg-primary/5"
             >
               <input type="radio" name="storeId" value={store.id} className="accent-primary" required />
-              <span className="font-medium">{store.name}</span>
+              <div>
+                <span className="font-medium">{store.name}</span>
+                {store.address && (
+                  <p className="text-xs text-muted-foreground">{store.address}</p>
+                )}
+              </div>
             </label>
           ))}
         </fieldset>
@@ -33,21 +39,7 @@ export default async function NewShoppingPage() {
         <summary className="cursor-pointer text-sm font-medium">
           ¿No encuentras tu tienda? Agregar nueva
         </summary>
-        <form action={createStore} className="mt-3 flex gap-2">
-          <input
-            type="text"
-            name="name"
-            placeholder="Nombre de la tienda"
-            required
-            className="flex-1 rounded-md border px-3 py-2 text-sm"
-          />
-          <button
-            type="submit"
-            className="rounded-md border px-4 py-2 text-sm hover:bg-muted"
-          >
-            Agregar
-          </button>
-        </form>
+        <NewStoreForm action={createStore} />
       </details>
     </div>
   );
