@@ -20,7 +20,7 @@ export async function Navbar() {
   return (
     <nav className="relative border-b bg-background">
       <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
-        <Link href="/" className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2 md:flex-none flex-1 justify-center md:justify-start">
           <img src="/logo-icon.svg" alt="" className="size-7" />
           <span className="text-lg font-semibold">FinanzApp</span>
           <BetaBadge />
