@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { auth, signIn, signOut } from "@/lib/auth";
 import { DesktopNavDropdown } from "@/components/desktop-nav-dropdown";
 import { DesktopQuickAdd } from "@/components/desktop-quick-add";
@@ -19,8 +20,8 @@ export async function Navbar() {
   return (
     <nav className="relative border-b bg-background">
       <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
-        <Link href="/" className="text-lg font-semibold">
-          FinanzApp
+        <Link href="/" className="flex items-center gap-2">
+          <Image src="/logo.svg" alt="FinanzApp" width={140} height={48} className="h-8 w-auto" priority />
         </Link>
         {session?.user ? (
           <>

@@ -128,7 +128,7 @@ export function MobileMenu({ user, isAdmin }: Props) {
         >
           {/* Header */}
           <div className="flex h-14 items-center border-b px-4">
-            <span className="text-lg font-semibold">FinanzApp</span>
+            <img src="/logo.svg" alt="FinanzApp" className="h-8 w-auto" />
           </div>
 
           {/* Nav links */}
