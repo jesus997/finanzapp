@@ -99,10 +99,14 @@
 
 ### Invitation
 - id, code (único), inviterId
-- usedByEmail: String? (email del usuario que usó la invitación)
-- usedAt: DateTime? (fecha de uso)
+- label: String? (etiqueta para identificar, ej: "Influencer X")
+- maxUses: Int? (null o 0 = ilimitada, 1 = un solo uso, N = N usos)
+- useCount: Int (default: 0)
+- usedByEmail: String? (email del último usuario que usó la invitación)
+- usedAt: DateTime? (fecha en que se agotó)
 - createdAt
-- Máximo 10 invitaciones por usuario
+- Usuarios normales: máximo 10 invitaciones, un solo uso
+- Admin: invitaciones ilimitadas, configurable single/multi-uso con etiqueta
 
 ## 2. Enums compartidos
 
@@ -318,7 +322,7 @@ Panel exclusivo para administradores del sistema, protegido por `ADMIN_EMAILS` (
 
 - **Resumen**: contadores globales (usuarios, invitaciones usadas/total, productos, tiendas, sesiones de compra)
 - **Usuarios**: lista con foto, nombre, email, quién los invitó, invitaciones enviadas/usadas, fecha de registro
-- **Invitaciones**: todas las invitaciones del sistema con código, invitador, estado (pendiente/usada), quién la usó
+- **Invitaciones**: todas las invitaciones del sistema con estado, creación ilimitada, soporte single/multi-uso con etiqueta opcional para tracking (ej: influencers)
 - **Productos**: catálogo global con edición inline (nombre, marca, descripción) y eliminación
 
 El layout `/admin` verifica el email del usuario contra `ADMIN_EMAILS` y redirige a `/` si no es admin. No se requiere campo `role` en la BD.
