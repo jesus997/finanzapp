@@ -1,66 +1,96 @@
-import { getAdminInvitations } from "@/lib/actions/admin";
+import { getAdminInvitations, createAdminInvitation, deleteAdminInvitation } from "@/lib/actions/admin";
+import { CopyButton } from "@/components/copy-button";
+import { headers } from "next/headers";
 
 export default async function AdminInvitationsPage() {
   const invitations = await getAdminInvitations();
-  const used = invitations.filter((i) => i.usedAt).length;
+  const headersList = await headers();
+  const host = headersList.get("host") ?? "localhost:3000";
+  const protocol = host.startsWith("localhost") ? "http" : "https";
+  const baseUrl = `${protocol}://${host}`;
+
+  const totalUses = invitations.reduce((s, i) => s + i.useCount, 0);
+
+  function status(inv: (typeof invitations)[0]) {
+    const max = inv.maxUses ?? 1;
+    if (max === 0) return { label: `${inv.useCount} usos · Ilimitada`, exhausted: false, color: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" };
+    if (inv.useCount >= max) return { label: "Agotada", exhausted: true, color: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" };
+    if (inv.useCount > 0) return { label: `${inv.useCount}/${max} usos`, exhausted: false, color: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400" };
+    return { label: "Pendiente", exhausted: false, color: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400" };
+  }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <p className="text-sm text-muted-foreground">
-        {invitations.length} invitaciones · {used} usadas · {invitations.length - used} pendientes
+        {invitations.length} invitaciones · {totalUses} registros totales
       </p>
 
-      {/* Mobile cards */}
-      <div className="grid gap-3 md:hidden">
-        {invitations.map((inv) => (
-          <div key={inv.id} className="rounded-xl border p-4 space-y-1">
-            <div className="flex items-center justify-between">
-              <code className="text-xs">{inv.code}</code>
-              <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${inv.usedAt ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"}`}>
-                {inv.usedAt ? "Usada" : "Pendiente"}
-              </span>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Enviada por: {inv.inviterName ?? inv.inviterEmail}
-            </p>
-            {inv.usedByEmail && (
-              <p className="text-xs text-muted-foreground">Usada por: {inv.usedByEmail}</p>
-            )}
-            <p className="text-xs text-muted-foreground">
-              {new Date(inv.createdAt).toLocaleDateString("es-MX")}
-            </p>
-          </div>
-        ))}
-      </div>
+      {/* Create invitation form */}
+      <form action={createAdminInvitation} className="rounded-xl border p-4 space-y-3">
+        <p className="text-sm font-medium">Crear invitación</p>
+        <input
+          name="label"
+          placeholder="Etiqueta (opcional, ej: Influencer X)"
+          className="w-full rounded-md border px-3 py-2 text-sm"
+        />
+        <div>
+          <label className="text-xs text-muted-foreground">Máximo de usos (0 = ilimitado, vacío = 1 uso)</label>
+          <input
+            name="maxUses"
+            type="number"
+            min="0"
+            placeholder="1"
+            className="w-full rounded-md border px-3 py-2 text-sm"
+          />
+        </div>
+        <button
+          type="submit"
+          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+        >
+          + Generar invitación
+        </button>
+      </form>
 
-      {/* Desktop table */}
-      <div className="hidden md:block overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b text-left text-muted-foreground">
-              <th className="pb-2 font-medium">Código</th>
-              <th className="pb-2 font-medium">Enviada por</th>
-              <th className="pb-2 font-medium">Usada por</th>
-              <th className="pb-2 font-medium">Estado</th>
-              <th className="pb-2 font-medium">Fecha</th>
-            </tr>
-          </thead>
-          <tbody>
-            {invitations.map((inv) => (
-              <tr key={inv.id} className="border-b">
-                <td className="py-2"><code className="text-xs">{inv.code}</code></td>
-                <td className="py-2">{inv.inviterName ?? inv.inviterEmail}</td>
-                <td className="py-2 text-muted-foreground">{inv.usedByEmail ?? "—"}</td>
-                <td className="py-2">
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${inv.usedAt ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"}`}>
-                    {inv.usedAt ? "Usada" : "Pendiente"}
+      {/* Invitations list */}
+      <div className="space-y-3">
+        {invitations.map((inv) => {
+          const url = `${baseUrl}/invitar/${inv.code}`;
+          const s = status(inv);
+          return (
+            <div key={inv.id} className="rounded-xl border p-4 space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${s.color}`}>
+                    {s.label}
                   </span>
-                </td>
-                <td className="py-2 text-muted-foreground">{new Date(inv.createdAt).toLocaleDateString("es-MX")}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                  {inv.label && <span className="text-sm font-medium truncate">{inv.label}</span>}
+                </div>
+                <span className="shrink-0 text-xs text-muted-foreground">
+                  {new Date(inv.createdAt).toLocaleDateString("es-MX")}
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Por: {inv.inviterName ?? inv.inviterEmail}
+                {inv.usedByEmail && ` · Último uso: ${inv.usedByEmail}`}
+              </p>
+              {!s.exhausted && (
+                <div className="flex items-center gap-2">
+                  <input
+                    readOnly
+                    value={url}
+                    className="flex-1 rounded-md border bg-muted px-3 py-1.5 text-xs font-mono"
+                  />
+                  <CopyButton text={url} />
+                </div>
+              )}
+              {inv.useCount === 0 && (
+                <form action={deleteAdminInvitation.bind(null, inv.id)}>
+                  <button type="submit" className="text-xs text-destructive hover:underline">Eliminar</button>
+                </form>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

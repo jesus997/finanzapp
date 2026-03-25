@@ -2,6 +2,8 @@
 
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { randomBytes } from "crypto";
+import { revalidatePath } from "next/cache";
 
 async function requireAdmin() {
   const session = await auth();
@@ -12,7 +14,7 @@ async function requireAdmin() {
     .map((e) => e.trim().toLowerCase())
     .filter(Boolean);
   if (!admins.includes(email.toLowerCase())) throw new Error("No autorizado");
-  return email;
+  return session.user!.id!;
 }
 
 // ── Stats ───────────────────────────────────────────────────
@@ -83,6 +85,9 @@ export async function getAdminUsers(): Promise<AdminUser[]> {
 export interface AdminInvitation {
   id: string;
   code: string;
+  label: string | null;
+  maxUses: number | null;
+  useCount: number;
   inviterName: string | null;
   inviterEmail: string | null;
   usedByEmail: string | null;
@@ -101,6 +106,9 @@ export async function getAdminInvitations(): Promise<AdminInvitation[]> {
   return invitations.map((i) => ({
     id: i.id,
     code: i.code,
+    label: i.label,
+    maxUses: i.maxUses,
+    useCount: i.useCount,
     inviterName: i.inviter.name,
     inviterEmail: i.inviter.email,
     usedByEmail: i.usedByEmail,
@@ -158,4 +166,26 @@ export async function updateProduct(
 export async function deleteProduct(id: string) {
   await requireAdmin();
   await prisma.product.delete({ where: { id } });
+}
+
+// ── Admin Invitations ───────────────────────────────────────
+
+export async function createAdminInvitation(formData: FormData) {
+  const userId = await requireAdmin();
+  const label = (formData.get("label") as string) || null;
+  const maxUsesRaw = formData.get("maxUses") as string;
+  const maxUses = maxUsesRaw ? parseInt(maxUsesRaw, 10) : 1;
+
+  const code = randomBytes(6).toString("hex");
+  await prisma.invitation.create({
+    data: { code, inviterId: userId, label, maxUses: maxUses || null },
+  });
+
+  revalidatePath("/admin/invitaciones");
+}
+
+export async function deleteAdminInvitation(id: string) {
+  await requireAdmin();
+  await prisma.invitation.deleteMany({ where: { id } });
+  revalidatePath("/admin/invitaciones");
 }

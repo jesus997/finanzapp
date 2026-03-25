@@ -279,6 +279,9 @@ model Invitation {
   id        String    @id @default(cuid())
   code      String    @unique
   inviterId String
+  label     String?
+  maxUses   Int?
+  useCount  Int       @default(0)
   usedByEmail String?
   usedAt    DateTime?
   createdAt DateTime  @default(now())

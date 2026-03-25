@@ -36,21 +36,23 @@ export default async function InvitationsPage() {
       <div className="space-y-3">
         {invitations.map((inv) => {
           const url = `${baseUrl}/invitar/${inv.code}`;
-          const used = !!inv.usedAt;
+          const maxUses = inv.maxUses ?? 1;
+          const exhausted = inv.useCount >= maxUses;
           return (
             <div key={inv.id} className="rounded-xl border p-4 space-y-2">
               <div className="flex items-center justify-between">
-                <span className={`rounded px-2 py-0.5 text-xs ${used ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}`}>
-                  {used ? "Usada" : "Pendiente"}
+                <span className={`rounded px-2 py-0.5 text-xs ${exhausted ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}`}>
+                  {exhausted ? "Usada" : maxUses > 1 ? `${inv.useCount}/${maxUses} usos` : "Pendiente"}
                 </span>
                 <span className="text-xs text-muted-foreground">
                   {inv.createdAt.toLocaleDateString("es-MX")}
                 </span>
               </div>
-              {used && inv.usedByEmail && (
+              {inv.label && <p className="text-xs font-medium">{inv.label}</p>}
+              {exhausted && inv.usedByEmail && maxUses <= 1 && (
                 <p className="text-xs text-muted-foreground">Usada por: {inv.usedByEmail}</p>
               )}
-              {!used && (
+              {!exhausted && (
                 <>
                   <input
                     readOnly
@@ -59,11 +61,13 @@ export default async function InvitationsPage() {
                   />
                   <div className="flex gap-3">
                     <CopyButton text={url} />
-                    <form action={deleteInvitation.bind(null, inv.id)}>
-                      <button type="submit" className="text-xs text-destructive hover:underline">
-                        Eliminar
-                      </button>
-                    </form>
+                    {inv.useCount === 0 && (
+                      <form action={deleteInvitation.bind(null, inv.id)}>
+                        <button type="submit" className="text-xs text-destructive hover:underline">
+                          Eliminar
+                        </button>
+                      </form>
+                    )}
                   </div>
                 </>
               )}

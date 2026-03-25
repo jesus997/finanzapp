@@ -56,9 +56,11 @@ export async function getInvitationByCode(code: string) {
     include: { inviter: { select: { name: true, image: true } } },
   });
   if (!invitation) return null;
+  const maxUses = invitation.maxUses ?? 1;
+  const exhausted = invitation.useCount >= maxUses;
   return {
     code: invitation.code,
-    used: !!invitation.usedAt,
+    used: exhausted,
     inviterName: invitation.inviter.name,
     inviterImage: invitation.inviter.image,
   };

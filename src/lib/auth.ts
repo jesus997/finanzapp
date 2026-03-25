@@ -29,7 +29,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (!code) return false;
 
       const invitation = await prisma.invitation.findUnique({ where: { code } });
-      if (!invitation || invitation.usedAt) return false;
+      if (!invitation) return false;
+      // Single-use: maxUses is null or 1 — check usedAt. Multi-use: check useCount < maxUses.
+      const maxUses = invitation.maxUses ?? 1;
+      if (invitation.useCount >= maxUses) return false;
 
       return true;
     },
@@ -42,12 +45,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (!code || !user.id) return;
 
       const invitation = await prisma.invitation.findUnique({ where: { code } });
-      if (!invitation || invitation.usedAt) return;
+      if (!invitation) return;
+      const maxUses = invitation.maxUses ?? 1;
+      if (invitation.useCount >= maxUses) return;
 
+      const newCount = invitation.useCount + 1;
       await prisma.$transaction([
         prisma.invitation.update({
           where: { id: invitation.id },
-          data: { usedByEmail: user.email, usedAt: new Date() },
+          data: {
+            useCount: newCount,
+            usedByEmail: user.email,
+            usedAt: newCount >= maxUses ? new Date() : undefined,
+          },
         }),
         prisma.user.update({
           where: { id: user.id },
