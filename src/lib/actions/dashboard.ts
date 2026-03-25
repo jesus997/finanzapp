@@ -15,6 +15,7 @@ export interface UpcomingEvent {
   day: number;
   amount: number | null;
   type: string;
+  detail: string;
 }
 
 export interface DashboardStats {
@@ -78,7 +79,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
   const upcoming = events
     .filter((e) => e.day >= today && e.amount != null)
     .slice(0, 5)
-    .map((e) => ({ label: e.label, day: e.day, amount: e.amount, type: e.type }));
+    .map((e) => ({ label: e.label, day: e.day, amount: e.amount, type: e.type, detail: e.detail }));
 
   return {
     monthlyIncome: Math.round(monthlyIncome * 100) / 100,
