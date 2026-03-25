@@ -81,6 +81,7 @@ export function PaymentCalendar({ initialYear, initialMonth, initialEvents, fetc
   const [month, setMonth] = useState(initialMonth);
   const [events, setEvents] = useState(initialEvents);
   const [loading, setLoading] = useState(false);
+  const [showPast, setShowPast] = useState(false);
 
   const navigate = async (delta: number) => {
     let newMonth = month + delta;
@@ -89,6 +90,7 @@ export function PaymentCalendar({ initialYear, initialMonth, initialEvents, fetc
     if (newMonth > 12) { newMonth = 1; newYear++; }
     setMonth(newMonth);
     setYear(newYear);
+    setShowPast(false);
     setLoading(true);
     const data = await fetchEvents(newYear, newMonth);
     setEvents(data);
@@ -110,6 +112,10 @@ export function PaymentCalendar({ initialYear, initialMonth, initialEvents, fetc
   const daysWithEvents = Object.keys(eventsByDay)
     .map(Number)
     .sort((a, b) => a - b);
+
+  const todayDay = isCurrentMonth ? today.getDate() : 1;
+  const futureDays = daysWithEvents.filter((d) => d >= todayDay);
+  const pastDays = daysWithEvents.filter((d) => d < todayDay);
 
   return (
     <div className="space-y-4">
@@ -133,12 +139,39 @@ export function PaymentCalendar({ initialYear, initialMonth, initialEvents, fetc
         ))}
       </div>
 
-      {/* Mobile: list view */}
+      {/* Mobile: list view — from today forward */}
       <div className={`md:hidden space-y-4 ${loading ? "opacity-50" : ""}`}>
-        {daysWithEvents.length === 0 ? (
+        {pastDays.length > 0 && !showPast && (
+          <button
+            onClick={() => setShowPast(true)}
+            className="w-full rounded-lg border border-dashed px-3 py-2 text-sm text-muted-foreground hover:bg-muted"
+          >
+            Ver {pastDays.length} día{pastDays.length > 1 ? "s" : ""} anterior{pastDays.length > 1 ? "es" : ""} con pagos
+          </button>
+        )}
+        {showPast && pastDays.map((day) => (
+          <div key={day} className="space-y-2 opacity-60">
+            <p className="text-sm font-semibold">Día {day}</p>
+            <div className="space-y-1.5">
+              {eventsByDay[day].map((e, idx) => (
+                <EventListItem key={idx} event={e} />
+              ))}
+            </div>
+          </div>
+        ))}
+        {showPast && pastDays.length > 0 && futureDays.length > 0 && (
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <div className="flex-1 border-t" />
+            <span>Hoy</span>
+            <div className="flex-1 border-t" />
+          </div>
+        )}
+        {futureDays.length === 0 && pastDays.length === 0 ? (
           <p className="text-sm text-muted-foreground">Sin eventos este mes.</p>
+        ) : futureDays.length === 0 ? (
+          <p className="text-sm text-muted-foreground">Sin eventos pendientes este mes.</p>
         ) : (
-          daysWithEvents.map((day) => {
+          futureDays.map((day) => {
             const isToday = isCurrentMonth && today.getDate() === day;
             return (
               <div key={day} className="space-y-2">
