@@ -22,28 +22,46 @@ export async function getCards() {
 
 export async function getCardsWithExpenses() {
   const userId = await getAuthUserId();
-  const [cards, expenses] = await Promise.all([
+  const [cards, recurringExpenses, dailyExpenses] = await Promise.all([
     prisma.card.findMany({ where: { userId }, orderBy: { createdAt: "desc" } }),
     prisma.recurringExpense.findMany({
       where: { userId, paymentMethodType: { in: ["CREDIT_CARD", "DEBIT_CARD"] } },
       select: { id: true, name: true, amount: true, frequency: true, paymentMethodId: true },
     }),
+    prisma.expense.findMany({
+      where: { userId, paymentMethodType: { in: ["CREDIT_CARD", "DEBIT_CARD"] } },
+      select: { id: true, name: true, amount: true, date: true, paymentMethodId: true },
+      orderBy: { date: "desc" },
+    }),
   ]);
 
-  const expensesByCard = new Map<string, typeof expenses>();
-  for (const exp of expenses) {
-    const list = expensesByCard.get(exp.paymentMethodId) ?? [];
+  const recurringByCard = new Map<string, typeof recurringExpenses>();
+  for (const exp of recurringExpenses) {
+    const list = recurringByCard.get(exp.paymentMethodId) ?? [];
     list.push(exp);
-    expensesByCard.set(exp.paymentMethodId, list);
+    recurringByCard.set(exp.paymentMethodId, list);
+  }
+
+  const dailyByCard = new Map<string, typeof dailyExpenses>();
+  for (const exp of dailyExpenses) {
+    const list = dailyByCard.get(exp.paymentMethodId) ?? [];
+    list.push(exp);
+    dailyByCard.set(exp.paymentMethodId, list);
   }
 
   return cards.map((card) => ({
     ...card,
-    expenses: (expensesByCard.get(card.id) ?? []).map((e) => ({
+    expenses: (recurringByCard.get(card.id) ?? []).map((e) => ({
       id: e.id,
       name: e.name,
       amount: Number(e.amount),
       frequency: e.frequency,
+    })),
+    dailyExpenses: (dailyByCard.get(card.id) ?? []).map((e) => ({
+      id: e.id,
+      name: e.name,
+      amount: Number(e.amount),
+      date: e.date.toISOString(),
     })),
   }));
 }

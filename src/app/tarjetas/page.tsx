@@ -66,7 +66,11 @@ export default async function CardsPage() {
                 </div>
               )}
 
-              <CardExpensesList expenses={card.expenses} />
+              <CardExpensesList
+                cardName={card.name}
+                expenses={card.expenses}
+                dailyExpenses={card.dailyExpenses}
+              />
 
               <div className="flex gap-2 pt-1">
                 <Link
