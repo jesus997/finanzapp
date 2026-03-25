@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -54,6 +55,7 @@ interface Props {
 }
 
 export function RecurringExpenseForm({ expense, cards, incomeSources }: Props) {
+  const router = useRouter();
   const [methodType, setMethodType] = useState<string>(expense?.paymentMethodType ?? "CREDIT_CARD");
   const [methodId, setMethodId] = useState(expense?.paymentMethodId ?? "");
   const [frequency, setFrequency] = useState<string>(expense?.frequency ?? "MONTHLY");
@@ -246,9 +248,14 @@ export function RecurringExpenseForm({ expense, cards, incomeSources }: Props) {
         </Select>
       </div>
 
-      <Button type="submit">
-        {expense ? "Guardar cambios" : "Crear gasto"}
-      </Button>
+      <div className="flex gap-3">
+        <Button type="submit" className="flex-1">
+          {expense ? "Guardar cambios" : "Crear gasto"}
+        </Button>
+        <Button type="button" variant="outline" onClick={() => router.back()}>
+          Cancelar
+        </Button>
+      </div>
     </form>
   );
 }

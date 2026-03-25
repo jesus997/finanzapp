@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -33,6 +34,7 @@ interface Props {
 }
 
 export function SavingsFundForm({ fund, incomeSources }: Props) {
+  const router = useRouter();
   const [savingsType, setSavingsType] = useState<string>(fund?.type ?? "FIXED_AMOUNT");
 
   const action = fund ? updateSavingsFund.bind(null, fund.id) : createSavingsFund;
@@ -114,9 +116,14 @@ export function SavingsFundForm({ fund, incomeSources }: Props) {
         />
       </div>
 
-      <Button type="submit">
-        {fund ? "Guardar cambios" : "Crear apartado"}
-      </Button>
+      <div className="flex gap-3">
+        <Button type="submit" className="flex-1">
+          {fund ? "Guardar cambios" : "Crear apartado"}
+        </Button>
+        <Button type="button" variant="outline" onClick={() => router.back()}>
+          Cancelar
+        </Button>
+      </div>
     </form>
   );
 }

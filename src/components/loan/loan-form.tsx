@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -37,6 +38,7 @@ interface Props {
 }
 
 export function LoanForm({ loan }: Props) {
+  const router = useRouter();
   const [loanType, setLoanType] = useState<string>(loan?.type ?? "BANK");
   const [institution, setInstitution] = useState(loan?.institution ?? "");
 
@@ -210,9 +212,14 @@ export function LoanForm({ loan }: Props) {
         </div>
       </div>
 
-      <Button type="submit">
-        {loan ? "Guardar cambios" : "Crear préstamo"}
-      </Button>
+      <div className="flex gap-3">
+        <Button type="submit" className="flex-1">
+          {loan ? "Guardar cambios" : "Crear préstamo"}
+        </Button>
+        <Button type="button" variant="outline" onClick={() => router.back()}>
+          Cancelar
+        </Button>
+      </div>
     </form>
   );
 }

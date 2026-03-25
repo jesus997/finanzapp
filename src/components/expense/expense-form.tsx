@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -38,6 +39,7 @@ interface Props {
 }
 
 export function ExpenseForm({ cards, incomeSources, expense }: Props) {
+  const router = useRouter();
   const [name, setName] = useState(expense?.name ?? "");
   const [description, setDescription] = useState(expense?.description ?? "");
   const [amount, setAmount] = useState(expense?.amount?.toString() ?? "");
@@ -163,9 +165,14 @@ export function ExpenseForm({ cards, incomeSources, expense }: Props) {
         </div>
       )}
 
-      <Button type="submit" className="w-full">
-        {expense ? "Guardar cambios" : "Registrar gasto"}
-      </Button>
+      <div className="flex gap-3">
+        <Button type="submit" className="flex-1">
+          {expense ? "Guardar cambios" : "Registrar gasto"}
+        </Button>
+        <Button type="button" variant="outline" onClick={() => router.back()}>
+          Cancelar
+        </Button>
+      </div>
     </form>
   );
 }

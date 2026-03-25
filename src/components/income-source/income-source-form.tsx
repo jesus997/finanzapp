@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -66,6 +67,7 @@ interface Props {
 }
 
 export function IncomeSourceForm({ incomeSource, debitCards }: Props) {
+  const router = useRouter();
   const [frequency, setFrequency] = useState<Frequency>(
     incomeSource?.frequency ?? "MONTHLY"
   );
@@ -280,9 +282,14 @@ export function IncomeSourceForm({ incomeSource, debitCards }: Props) {
         </div>
       )}
 
-      <Button type="submit">
-        {incomeSource ? "Guardar cambios" : "Crear fuente de ingreso"}
-      </Button>
+      <div className="flex gap-3">
+        <Button type="submit" className="flex-1">
+          {incomeSource ? "Guardar cambios" : "Crear fuente de ingreso"}
+        </Button>
+        <Button type="button" variant="outline" onClick={() => router.back()}>
+          Cancelar
+        </Button>
+      </div>
     </form>
   );
 }

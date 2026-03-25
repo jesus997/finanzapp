@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -34,6 +35,7 @@ interface Props {
 }
 
 export function CardForm({ card }: Props) {
+  const router = useRouter();
   const [cardType, setCardType] = useState<CardType>(card?.type ?? "DEBIT");
   const isCredit = cardType === "CREDIT";
 
@@ -169,9 +171,14 @@ export function CardForm({ card }: Props) {
         </>
       )}
 
-      <Button type="submit">
-        {card ? "Guardar cambios" : "Crear tarjeta"}
-      </Button>
+      <div className="flex gap-3">
+        <Button type="submit" className="flex-1">
+          {card ? "Guardar cambios" : "Crear tarjeta"}
+        </Button>
+        <Button type="button" variant="outline" onClick={() => router.back()}>
+          Cancelar
+        </Button>
+      </div>
     </form>
   );
 }
