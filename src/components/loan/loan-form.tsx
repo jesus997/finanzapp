@@ -159,6 +159,9 @@ export function LoanForm({ loan }: Props) {
           defaultValue={loan?.interestRate?.toString() ?? "0"}
           placeholder="0.00"
         />
+        <p className="text-xs text-muted-foreground">
+          Se aplica 16% de IVA sobre intereses (impuesto mexicano). Déjalo en 0 si no aplica.
+        </p>
       </div>
 
       <div className="space-y-2">
@@ -173,13 +176,16 @@ export function LoanForm({ loan }: Props) {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="endDate">Fecha de fin (opcional, se calcula si se omite)</Label>
+        <Label htmlFor="endDate">Fecha de fin (opcional)</Label>
         <Input
           id="endDate"
           name="endDate"
           type="date"
           defaultValue={loan?.endDate?.slice(0, 10) ?? ""}
         />
+        <p className="text-xs text-muted-foreground">
+          Si no la conoces, se estima automáticamente con el saldo y monto de pago.
+        </p>
       </div>
 
       <div className="grid grid-cols-2 gap-3">

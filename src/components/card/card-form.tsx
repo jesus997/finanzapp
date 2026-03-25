@@ -156,6 +156,9 @@ export function CardForm({ card }: Props) {
               </Select>
             </div>
           </div>
+          <p className="text-xs text-muted-foreground -mt-2">
+            Estos datos aparecen en tu estado de cuenta. El corte cierra el periodo y el pago es la fecha límite.
+          </p>
 
           <div className="space-y-2">
             <Label htmlFor="interestRate">Tasa de interés (%)</Label>
@@ -167,6 +170,9 @@ export function CardForm({ card }: Props) {
               defaultValue={card?.interestRate?.toString() ?? "0"}
               placeholder="0.00"
             />
+            <p className="text-xs text-muted-foreground">
+              Tasa anual. Se usa para calcular intereses en la tabla de amortización.
+            </p>
           </div>
         </>
       )}

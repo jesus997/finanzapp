@@ -141,6 +141,9 @@ export function IncomeSourceForm({ incomeSource, debitCards }: Props) {
         />
         <Label htmlFor="isVariable">El monto es estimado (variable)</Label>
       </div>
+      <p className="text-xs text-muted-foreground -mt-2">
+        Marca esta opción si el monto cambia cada periodo (ej: comisiones, propinas).
+      </p>
 
       <div className="space-y-2">
         <Label htmlFor="frequency">Frecuencia</Label>
@@ -279,6 +282,9 @@ export function IncomeSourceForm({ incomeSource, debitCards }: Props) {
               ))}
             </SelectContent>
           </Select>
+          <p className="text-xs text-muted-foreground">
+            Vincula la tarjeta de débito donde recibes este ingreso.
+          </p>
         </div>
       )}
 

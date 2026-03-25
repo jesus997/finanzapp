@@ -208,6 +208,9 @@ export function RecurringExpenseForm({ expense, cards, incomeSources }: Props) {
             ))}
           </SelectContent>
         </Select>
+        <p className="text-xs text-muted-foreground">
+          La tarjeta o fuente con la que pagas este gasto. Se usa para agrupar gastos por tarjeta en la dispersión.
+        </p>
       </div>
 
       <div className="space-y-2">

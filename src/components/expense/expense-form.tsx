@@ -100,6 +100,10 @@ export function ExpenseForm({ cards, incomeSources, expense }: Props) {
           {scanning ? "Escaneando ticket..." : "📷 Escanear ticket"}
         </Button>
         <p className="mt-1 text-xs text-muted-foreground">
+          Toma una foto del ticket para pre-llenar nombre, monto y fecha automáticamente.
+        </p>
+        </Button>
+        <p className="mt-1 text-xs text-muted-foreground">
           Toma una foto del ticket para llenar automáticamente
         </p>
       </div>

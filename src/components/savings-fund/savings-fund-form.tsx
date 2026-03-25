@@ -73,6 +73,11 @@ export function SavingsFundForm({ fund, incomeSources }: Props) {
             ))}
           </SelectContent>
         </Select>
+        <p className="text-xs text-muted-foreground">
+          {savingsType === "PERCENTAGE"
+            ? "Se calcula como porcentaje del ingreso cada vez que dispersas."
+            : "Monto fijo que se prorratea según la frecuencia al dispersar."}
+        </p>
       </div>
 
       <div className="space-y-2">
@@ -127,6 +132,9 @@ export function SavingsFundForm({ fund, incomeSources }: Props) {
               ))}
             </SelectContent>
           </Select>
+          <p className="text-xs text-muted-foreground">
+            El ahorro se descuenta de este ingreso al hacer la dispersión.
+          </p>
         )}
       </div>
 
