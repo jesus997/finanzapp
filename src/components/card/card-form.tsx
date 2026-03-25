@@ -88,7 +88,7 @@ export function CardForm({ card }: Props) {
           onValueChange={(v) => v && setCardType(v as CardType)}
         >
           <SelectTrigger id="type">
-            <SelectValue />
+            <SelectValue placeholder={CARD_TYPE_LABELS[cardType]} />
           </SelectTrigger>
           <SelectContent>
             {Object.entries(CARD_TYPE_LABELS).map(([value, label]) => (
