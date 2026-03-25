@@ -18,6 +18,14 @@ export interface UpcomingEvent {
   detail: string;
 }
 
+export interface ActiveShopping {
+  id: string;
+  name: string;
+  storeName: string;
+  itemCount: number;
+  estimatedTotal: number;
+}
+
 export interface DashboardStats {
   monthlyIncome: number;
   monthlyExpenses: number;
@@ -26,6 +34,7 @@ export interface DashboardStats {
   totalSavings: number;
   totalDebt: number;
   upcoming: UpcomingEvent[];
+  activeShopping: ActiveShopping[];
 }
 
 export async function getDashboardStats(): Promise<DashboardStats> {
@@ -35,7 +44,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
   const year = now.getFullYear();
   const month = now.getMonth() + 1;
 
-  const [events, savingsFunds, loans, dailyExpensesTotal] = await Promise.all([
+  const [events, savingsFunds, loans, dailyExpensesTotal, inProgressSessions] = await Promise.all([
     getCalendarEvents(year, month),
     prisma.savingsFund.findMany({
       where: { userId },
@@ -48,6 +57,11 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     prisma.expense.aggregate({
       where: { userId, date: { gte: new Date(year, month - 1, 1), lt: new Date(year, month, 1) } },
       _sum: { amount: true },
+    }),
+    prisma.shoppingSession.findMany({
+      where: { userId, status: "IN_PROGRESS" },
+      orderBy: { date: "desc" },
+      include: { store: { select: { name: true } }, _count: { select: { items: true } } },
     }),
   ]);
 
@@ -81,6 +95,14 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     .slice(0, 5)
     .map((e) => ({ label: e.label, day: e.day, amount: e.amount, type: e.type, detail: e.detail }));
 
+  const activeShopping: ActiveShopping[] = inProgressSessions.map((s) => ({
+    id: s.id,
+    name: s.name,
+    storeName: s.store.name,
+    itemCount: s._count.items,
+    estimatedTotal: Number(s.estimatedTotal),
+  }));
+
   return {
     monthlyIncome: Math.round(monthlyIncome * 100) / 100,
     monthlyExpenses: Math.round(monthlyExpenses * 100) / 100,
@@ -89,5 +111,6 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     totalSavings: Math.round(totalSavings * 100) / 100,
     totalDebt: Math.round(totalDebt * 100) / 100,
     upcoming,
+    activeShopping,
   };
 }

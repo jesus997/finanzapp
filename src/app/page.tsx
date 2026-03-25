@@ -35,6 +35,36 @@ export default async function Home() {
         Hola, {session.user.name ?? "usuario"}
       </h1>
 
+      {/* Compra en progreso */}
+      {stats.activeShopping.length > 0 && (() => {
+        const latest = stats.activeShopping[0];
+        const moreCount = stats.activeShopping.length - 1;
+        return (
+          <div className="rounded-xl border border-orange-200 bg-orange-50 p-4 dark:border-orange-900 dark:bg-orange-950/30">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-xs font-medium text-orange-600 dark:text-orange-400">🛒 Compra en progreso</p>
+                <p className="mt-1 text-sm font-semibold truncate">{latest.name}</p>
+                <p className="text-xs text-muted-foreground">
+                  {latest.itemCount} productos · {fmt(latest.estimatedTotal)}
+                </p>
+              </div>
+              <Link
+                href={`/compras/${latest.id}`}
+                className={buttonVariants({ size: "sm", className: "shrink-0" })}
+              >
+                Continuar
+              </Link>
+            </div>
+            {moreCount > 0 && (
+              <Link href="/compras" className="mt-2 block text-xs text-orange-600 hover:underline dark:text-orange-400">
+                +{moreCount} compra{moreCount > 1 ? "s" : ""} más en progreso → Ver todas
+              </Link>
+            )}
+          </div>
+        );
+      })()}
+
       {/* Resumen del mes */}
       <div id="tour-summary" className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         <Link href="/ingresos" className="rounded-xl border p-4 transition-colors hover:bg-muted/50">
