@@ -210,6 +210,46 @@ Registro de decisiones técnicas tomadas durante el desarrollo del proyecto. Cad
   - Solo manual: Tedioso, no escala.
 - **Razón**: El catálogo global se enriquece conforme más usuarios escanean. Open Food Facts aporta datos iniciales (nombre, marca) y el catálogo local compensa su cobertura limitada. Los precios por tienda permiten comparar y se actualizan automáticamente al completar cada compra.
 
+## 22. Navegación mobile nativa
+
+**Bottom bar + drawer lateral con swipe + FAB**
+
+- **Decisión**: Reemplazar el menú hamburguesa superior por una bottom bar fija con drawer lateral que se abre con swipe desde el borde izquierdo, más un FAB (+) para acciones rápidas de creación.
+- **Alternativas descartadas**:
+  - Tab bar con 5 tabs fijos: Limita a 5 secciones, la app tiene más.
+  - Menú hamburguesa superior: Poco accesible con una mano en móvil.
+- **Razón**: La bottom bar es accesible con el pulgar, el swipe es un patrón nativo familiar, y el FAB da acceso rápido a crear sin navegar primero. El drawer incluye perfil, info de la app y cerrar sesión.
+
+## 23. API Routes para operaciones en tiempo real
+
+**API Routes en vez de Server Actions para shopping items**
+
+- **Decisión**: Las operaciones de la lista de compras en vivo (agregar, editar, eliminar items, buscar productos) usan API Routes (`/api/shopping/items`, `/api/products/lookup`) en vez de Server Actions.
+- **Alternativas descartadas**:
+  - Server Actions: Revalidan automáticamente la ruta actual en cada llamada, causando recargas de página que rompen el estado del componente cliente.
+- **Razón**: Los Server Actions de Next.js siempre triggean revalidación del Server Component de la ruta actual. Para componentes que manejan estado local en tiempo real (como la lista de compras con escaneo), esto causa recargas inesperadas. Las API Routes son HTTP endpoints puros sin revalidación automática.
+
+## 24. Sistema de invitaciones
+
+**Invitación por enlace único con cookie**
+
+- **Decisión**: Sistema de invitación donde cada usuario genera enlaces con código único. El código se guarda en cookie antes del OAuth redirect y se valida en el callback `signIn` de NextAuth.
+- **Alternativas descartadas**:
+  - Registro abierto: Inseguro para una app hosteada públicamente.
+  - Whitelist de emails solamente: No escala, requiere configuración manual.
+  - Códigos de invitación en query param del callback: Se pierden durante el redirect de OAuth.
+- **Razón**: Las cookies persisten durante el redirect de OAuth (GitHub/Google → callback). El límite de 10 invitaciones por usuario controla el crecimiento. Compatible con ALLOWED_EMAILS como fallback.
+
+## 25. Barra de progreso global
+
+**Interceptor de clicks en links + pathname change detection**
+
+- **Decisión**: Componente `NavigationProgress` que intercepta clicks en `<a>` para iniciar una barra de progreso, y detecta cambios en `pathname` para completarla.
+- **Alternativas descartadas**:
+  - NProgress library: Dependencia externa para algo simple.
+  - Solo `loading.tsx`: No da feedback inmediato al tocar un link.
+- **Razón**: Zero dependencias, feedback visual inmediato al tocar cualquier link. Complementa los `loading.tsx` skeletons que aparecen después.
+
 ## Resumen del Stack
 
 | Capa | Tecnología | Versión |

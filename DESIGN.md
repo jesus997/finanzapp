@@ -8,8 +8,9 @@
 - id, email, name, image
 - currency (default: MXN)
 - onboardingCompleted (default: false) — controla si el tutorial ya se mostró
+- invitedById: String? (referencia al usuario que lo invitó)
 - createdAt, updatedAt
-- Relación: NextAuth Account y Session (gestionadas por el adapter de Prisma)
+- Relación: NextAuth Account y Session (gestionadas por el adapter de Prisma), invitedBy (User), invitees (User[]), invitations (Invitation[])
 
 ### IncomeSource
 - id, userId, name
@@ -95,6 +96,13 @@
 - name, barcode?, estimatedPrice, finalPrice?
 - quantity (default: 1), notes?
 
+### Invitation
+- id, code (único), inviterId
+- usedByEmail: String? (email del usuario que usó la invitación)
+- usedAt: DateTime? (fecha de uso)
+- createdAt
+- Máximo 10 invitaciones por usuario
+
 ## 2. Enums compartidos
 
 ### Frequency
@@ -165,6 +173,11 @@ La app está optimizada para uso en móvil:
 - **Formularios**: `max-w-md` funciona en mobile sin cambios
 - **Tarjetas (cards page)**: vista de gastos por tarjeta con toggle expandible
 
+### Navegación mobile nativa
+- **Bottom bar fija**: botón de menú, acceso directo a Inicio y Calendario, FAB (+) con acciones rápidas de creación
+- **Drawer lateral**: se abre con swipe desde borde izquierdo o botón de menú. Links con iconos y estado activo. Sección inferior con foto de perfil, nombre, botón de info (versión, deploy, disclaimer) y cerrar sesión
+- **Desktop**: navbar con dropdowns agrupados (Gastos, Más) y botón 'Nuevo' con dropdown de acciones rápidas
+
 ## 8. Escaneo de tickets (OCR)
 
 Permite registrar gastos diarios tomando una foto de un ticket de compra:
@@ -192,18 +205,18 @@ Módulo para registrar compras en el supermercado en tiempo real con escaneo de 
 ### Flujo principal
 
 1. Usuario toca "Nueva compra" → selecciona tienda → crea ShoppingSession (IN_PROGRESS)
-2. Escanea código de barras con la cámara del celular (html5-qrcode)
+2. Escanea código de barras con la cámara del celular (html5-qrcode, solo mobile — oculto en desktop en producción, disponible en dev)
    - Busca en Product local (catálogo global por barcode)
    - Si no existe → busca en Open Food Facts API
    - Si no existe → formulario manual → crea Product global
    - Agrega ShoppingItem con estimatedPrice (de ProductPrice para esa tienda, o manual)
 3. Pantalla muestra lista con total acumulado en tiempo real
+   - Tres modos de precio: por unidad (precio × cantidad), por peso (precio/kg × peso), precio fijo
+   - Total calculado automáticamente en tiempo real
 4. Usuario puede editar precio/cantidad de cualquier item (ej: frutas por kilo)
-5. Al pagar → escanea ticket con OCR (Tesseract.js, misma infra existente)
-   - Parser extrae líneas de productos con precios
-   - Matching por nombre: asocia líneas del ticket con ShoppingItems
-   - Actualiza finalPrice en cada item
-   - Muestra diff: "Estimado vs Real" con diferencias resaltadas
+5. Al terminar → botón 'Terminar compra' abre dialog preguntando si quiere revisar
+   - Sí: dialog con escaneo de ticket OCR, ajuste de precios con diff, método de pago
+   - No: dialog solo con método de pago
 6. Usuario selecciona método de pago y confirma → status = COMPLETED
    - Crea Expense automático (gasto diario) con finalTotal y categoría FOOD
    - Upsert ProductPrice para cada producto en esa tienda (precio actualizado)
@@ -258,11 +271,41 @@ Funciona sin IA por defecto. Al configurar API key de OpenAI:
 | `/compras` | ✅ | Historial de sesiones de compra |
 | `/compras/nueva` | ✅ | Seleccionar tienda e iniciar compra |
 | `/compras/[id]` | ✅ | Lista de compra en vivo con escaneo de códigos + completar con ticket OCR |
+| `/invitaciones` | ✅ | Gestión de invitaciones (generar, copiar, eliminar) |
+| `/invitar/[code]` | ✅ | Landing de invitación con nombre/foto del invitador |
 | `/reportes` | 🔲 | Reportería y gráficas |
 | `/ia` | 🔲 | Chat y herramientas IA |
 | `/configuracion` | 🔲 | API keys, preferencias |
 
-## 13. Roadmap / Pendientes
+## 13. Sistema de Invitaciones
+
+Sistema de invitación por enlace único para controlar el acceso de nuevos usuarios.
+
+### Flujo del invitador
+1. Va a `/invitaciones` y genera un enlace (código hex de 12 caracteres)
+2. Comparte el enlace `/invitar/[code]`
+3. Ve estado de cada invitación: pendiente o usada (con email)
+4. Puede eliminar invitaciones no usadas. Máximo 10 por usuario.
+
+### Flujo del invitado
+1. Abre `/invitar/[code]` → ve foto y nombre del invitador
+2. Texto: '{nombre} te ha invitado a usar FinanzApp'
+3. Elige GitHub o Google para crear cuenta
+4. Código se guarda en cookie → se valida en signIn callback
+5. Al crear usuario, se marca invitación como usada y se vincula invitedById
+
+### Control de acceso
+- ALLOWED_EMAILS: whitelist que siempre puede entrar
+- Usuarios existentes: siempre pueden hacer login
+- Usuarios nuevos sin invitación válida: rechazados
+
+## 14. Indicadores de Carga
+
+- **Barra de progreso global**: línea delgada en la parte superior que aparece durante navegaciones entre páginas
+- **Loading skeletons**: todas las rutas tienen `loading.tsx` con esqueletos animados
+- **Dashboard interactivo**: tarjetas de resumen son links clickeables, eventos próximos abren dialog con detalle completo
+
+## 15. Roadmap / Pendientes
 
 ### Próximas funcionalidades
 - **Reportería** — Gasto por tarjeta, totales por periodo, balance general, gráficas de tendencia
@@ -272,6 +315,4 @@ Funciona sin IA por defecto. Al configurar API key de OpenAI:
 - **Mejoras al OCR** — Provider de OpenAI Vision para mejor precisión en tickets, extracción de detalle de productos
 
 ### Mejoras técnicas pendientes
-- Agregar `error.tsx`, `loading.tsx` y `not-found.tsx` en rutas que falten
-- Viewport meta tag configuration (verificar)
-- Considerar PWA para mejor experiencia móvil
+- Considerar PWA para mejor experiencia móvil (viewport ya configurado)

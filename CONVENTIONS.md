@@ -103,3 +103,13 @@ Seguir los estándares de Next.js:
 - Grids de estadísticas: `grid-cols-2` en mobile, `lg:grid-cols-4` en desktop.
 - Formularios: `max-w-md` funciona en ambos tamaños sin cambios.
 - Tablas anchas (amortización): `overflow-x-auto` con márgenes negativos en mobile.
+
+### Navegación
+- **Mobile**: bottom bar fija con FAB (+), drawer lateral con swipe. No usar menú hamburguesa en el header.
+- **Desktop**: navbar con dropdowns para agrupar links. Botón 'Nuevo' con dropdown de acciones rápidas.
+- **Barra de progreso**: `NavigationProgress` en el layout global da feedback visual durante navegaciones.
+- **Loading skeletons**: toda ruta nueva debe incluir `loading.tsx` con esqueletos animados.
+
+### API Routes vs Server Actions
+- **Server Actions**: para operaciones CRUD estándar que navegan o revalidan la página (crear, editar, eliminar entidades).
+- **API Routes**: para operaciones en tiempo real donde el componente cliente maneja su propio estado (ej: lista de compras en vivo). Los Server Actions revalidan automáticamente la ruta actual, lo que causa recargas no deseadas.

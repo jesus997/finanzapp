@@ -14,7 +14,9 @@ Aplicación web open source para gestión de finanzas personales. Controla tus t
 - **Dispersión automática** — Al registrar ingreso, prorratea gastos y ahorros por cobro. Agrupa por tarjeta ("bolsas"). Soporte para revertir.
 - **Lista de compras** — Inicia una compra en el super, escanea códigos de barras con la cámara para agregar productos. Catálogo global (Open Food Facts + manual). Precios por tienda (Walmart, Oxxo, Soriana + custom). Total acumulado en tiempo real. Al pagar, escanea el ticket para validar precios reales. Genera gasto diario automáticamente.
 - **Calendario de pagos** — Vista mensual (grid en desktop, lista en móvil) con eventos de ingresos, tarjetas, préstamos y gastos. Navegación entre meses. Detalle al hacer click.
+- **Invitaciones** — Sistema de invitación por enlace único. Cada usuario puede generar hasta 10 invitaciones. El invitado ve quién lo invitó al crear su cuenta.
 - **Diseño responsive** — Optimizado para uso en móvil con menú hamburguesa, cards en mobile y tablas en desktop.
+- **Navegación mobile nativa** — Bottom bar con menú, accesos directos y FAB (+). Drawer lateral con swipe, perfil de usuario e info de la app. Barra de progreso global durante navegaciones.
 - **Onboarding** — Tutorial guiado para nuevos usuarios que explica el concepto de la app y cómo usarla. Se muestra una sola vez.
 - **Reportería** — Gasto por tarjeta, totales por periodo, balance general *(próximamente)*
 - **Integración IA (opcional)** — Categorización, recomendaciones, detección de gastos hormiga vía OpenAI *(próximamente)*
@@ -114,7 +116,10 @@ finanzapp/
 │   └── migrations/            # Migraciones
 ├── src/
 │   ├── app/                   # Rutas (Next.js App Router)
-│   │   ├── api/auth/          # API de autenticación
+│   │   ├── api/
+│   │   │   ├── auth/            # API de autenticación
+│   │   │   ├── products/lookup/ # Búsqueda de productos por código de barras
+│   │   │   └── shopping/items/  # CRUD items de compra (API routes)
 │   │   ├── ingresos/          # CRUD fuentes de ingreso
 │   │   ├── tarjetas/          # CRUD tarjetas
 │   │   ├── prestamos/         # CRUD préstamos + detalle con amortización
@@ -123,7 +128,9 @@ finanzapp/
 │   │   ├── ahorro/            # CRUD apartados de ahorro
 │   │   ├── calendario/        # Vista calendario de pagos
 │   │   ├── dispersiones/      # Dispersión automática
-│   │   └── compras/           # Lista de compras con escaneo de códigos
+│   │   ├── compras/           # Lista de compras con escaneo de códigos
+│   │   ├── invitaciones/        # Gestión de invitaciones
+│   │   └── invitar/[code]/      # Landing de invitación
 │   ├── components/
 │   │   ├── income-source/     # Componentes de ingresos
 │   │   ├── card/              # Componentes de tarjetas
@@ -134,6 +141,12 @@ finanzapp/
 │   │   ├── calendar/          # Componentes de calendario (grid + lista)
 │   │   ├── distribution/      # Componentes de dispersión
 │   │   ├── shopping/          # Componentes de lista de compras (escáner, lista en vivo)
+│   │   ├── mobile-bottom-bar.tsx  # Bottom bar mobile con FAB
+│   │   ├── desktop-quick-add.tsx  # Botón 'Nuevo' en desktop
+│   │   ├── desktop-nav-dropdown.tsx # Dropdowns del navbar desktop
+│   │   ├── navigation-progress.tsx # Barra de progreso global
+│   │   ├── upcoming-events.tsx    # Eventos próximos con dialog
+│   │   ├── copy-button.tsx        # Botón copiar al portapapeles
 │   │   ├── navbar.tsx         # Navegación principal (responsive)
 │   │   ├── mobile-menu.tsx    # Menú hamburguesa para móvil
 │   │   └── onboarding-tour.tsx # Tutorial guiado (Driver.js)
@@ -142,6 +155,7 @@ finanzapp/
 │   │   │   ├── dashboard.ts   # Estadísticas del home
 │   │   │   ├── calendar.ts    # Eventos del calendario
 │   │   │   ├── distribution.ts # Dispersión automática
+│   │   │   ├── invitation.ts  # CRUD invitaciones
 │   │   │   └── ...            # Un archivo por entidad
 │   │   ├── validations/       # Schemas Zod + tests
 │   │   ├── utils/
