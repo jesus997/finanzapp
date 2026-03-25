@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { Navbar } from "@/components/navbar";
 import { MobileBottomBar } from "@/components/mobile-bottom-bar";
@@ -56,6 +57,13 @@ export default async function RootLayout({
         <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 pb-20 md:pb-6">
           {children}
         </main>
+        <footer className="border-t py-4 pb-20 md:pb-4">
+          <div className="mx-auto flex max-w-5xl items-center justify-center gap-4 px-4 text-xs text-muted-foreground">
+            <span>© {new Date().getFullYear()} FinanzApp</span>
+            <Link href="/privacy" className="hover:underline">Privacidad</Link>
+            <Link href="/terms" className="hover:underline">Términos</Link>
+          </div>
+        </footer>
         {user && <MobileBottomBar user={user} isAdmin={admin} />}
       </body>
     </html>
