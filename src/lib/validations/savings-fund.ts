@@ -5,6 +5,7 @@ export const savingsFundSchema = z
     name: z.string().min(1, "El nombre es requerido"),
     type: z.enum(["FIXED_AMOUNT", "PERCENTAGE"]),
     value: z.coerce.number().positive("El valor debe ser mayor a 0"),
+    frequency: z.enum(["WEEKLY", "BIWEEKLY", "MONTHLY", "BIMONTHLY", "QUARTERLY", "SEMIANNUAL", "ANNUAL"]).default("MONTHLY"),
     incomeSourceId: z.string().min(1, "La fuente de ingreso es requerida"),
     accumulatedBalance: z.coerce.number().min(0).default(0),
   })

@@ -52,7 +52,9 @@
 ### SavingsFund
 - id, userId, name
 - type: `FIXED_AMOUNT` | `PERCENTAGE`
-- value, incomeSourceId, accumulatedBalance
+- value, frequency (default: MONTHLY), incomeSourceId, accumulatedBalance
+- Frecuencia aplica solo a FIXED_AMOUNT — al dispersar, se prorratea al equivalente por cobro
+- PERCENTAGE siempre se calcula sobre el monto del ingreso dispersado
 
 ### Expense
 - id, userId, name, description

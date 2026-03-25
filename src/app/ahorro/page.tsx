@@ -2,7 +2,7 @@ import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button-variants";
 import { Badge } from "@/components/ui/badge";
 import { getSavingsFunds, deleteSavingsFund } from "@/lib/actions/savings-fund";
-import { SAVINGS_TYPE_LABELS } from "@/lib/constants";
+import { SAVINGS_TYPE_LABELS, FREQUENCY_LABELS } from "@/lib/constants";
 
 export default async function SavingsFundsPage() {
   const funds = await getSavingsFunds();
@@ -43,7 +43,7 @@ export default async function SavingsFundsPage() {
                 <div className="grid grid-cols-2 gap-2 text-sm text-muted-foreground">
                   <div>
                     <p className="text-xs">
-                      {fund.type === "PERCENTAGE" ? "Porcentaje" : "Monto por periodo"}
+                      {fund.type === "PERCENTAGE" ? "Porcentaje" : `Monto ${FREQUENCY_LABELS[fund.frequency]?.toLowerCase() ?? ""}`}
                     </p>
                     <p className="font-medium text-foreground">
                       {fund.type === "PERCENTAGE"

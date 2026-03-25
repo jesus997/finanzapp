@@ -224,6 +224,7 @@ model SavingsFund {
   name               String
   type               SavingsType
   value              Decimal
+  frequency          Frequency   @default(MONTHLY)
   incomeSourceId     String
   accumulatedBalance Decimal     @default(0)
   createdAt          DateTime    @default(now())

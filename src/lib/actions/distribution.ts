@@ -208,10 +208,12 @@ export async function calculateDistribution(incomeSourceId: string): Promise<Dis
 
   // Savings linked to this income source
   const savingsItems: SavingsLineItem[] = savings.map((fund) => {
-    const amount = fund.type === "PERCENTAGE"
-      ? round2(totalAmount * Number(fund.value) / 100)
-      : round2(Number(fund.value));
-    return { id: fund.id, name: fund.name, amount };
+    if (fund.type === "PERCENTAGE") {
+      return { id: fund.id, name: fund.name, amount: round2(totalAmount * Number(fund.value) / 100) };
+    }
+    // Fixed amount: prorate based on savings frequency vs income frequency
+    const savingsMonthly = monthlyEquivalent(Number(fund.value), fund.frequency);
+    return { id: fund.id, name: fund.name, amount: round2(savingsMonthly / timesPerMonth) };
   });
 
   const totalCards = cardGroups.reduce((s, g) => s + g.totalPerPaycheck, 0);

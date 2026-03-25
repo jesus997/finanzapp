@@ -12,9 +12,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SAVINGS_TYPE_LABELS } from "@/lib/constants";
+import { SAVINGS_TYPE_LABELS, FREQUENCY_LABELS } from "@/lib/constants";
 import { createSavingsFund, updateSavingsFund } from "@/lib/actions/savings-fund";
-import type { SavingsType } from "@prisma/client";
+import type { SavingsType, Frequency } from "@prisma/client";
+
+const SAVINGS_FREQUENCIES: Frequency[] = [
+  "WEEKLY", "BIWEEKLY", "MONTHLY", "BIMONTHLY", "QUARTERLY", "SEMIANNUAL", "ANNUAL",
+];
 
 interface IncomeSourceOption {
   id: string;
@@ -27,6 +31,7 @@ interface Props {
     name: string;
     type: SavingsType;
     value: number;
+    frequency: Frequency;
     incomeSourceId: string;
     accumulatedBalance: number;
   };
@@ -36,12 +41,14 @@ interface Props {
 export function SavingsFundForm({ fund, incomeSources }: Props) {
   const router = useRouter();
   const [savingsType, setSavingsType] = useState<string>(fund?.type ?? "FIXED_AMOUNT");
+  const [frequency, setFrequency] = useState<string>(fund?.frequency ?? "MONTHLY");
 
   const action = fund ? updateSavingsFund.bind(null, fund.id) : createSavingsFund;
 
   return (
     <form action={action} className="space-y-4 max-w-md">
       <input type="hidden" name="type" value={savingsType} />
+      <input type="hidden" name="frequency" value={frequency} />
 
       <div className="space-y-2">
         <Label htmlFor="name">Nombre</Label>
@@ -70,7 +77,7 @@ export function SavingsFundForm({ fund, incomeSources }: Props) {
 
       <div className="space-y-2">
         <Label htmlFor="value">
-          {savingsType === "PERCENTAGE" ? "Porcentaje (%)" : "Monto por periodo ($)"}
+          {savingsType === "PERCENTAGE" ? "Porcentaje (%)" : "Monto ($)"}
         </Label>
         <Input
           id="value"
@@ -83,6 +90,25 @@ export function SavingsFundForm({ fund, incomeSources }: Props) {
           placeholder={savingsType === "PERCENTAGE" ? "10" : "0.00"}
         />
       </div>
+
+      {savingsType === "FIXED_AMOUNT" && (
+        <div className="space-y-2">
+          <Label htmlFor="frequency">Frecuencia del ahorro</Label>
+          <Select value={frequency} onValueChange={(v) => setFrequency(v ?? "MONTHLY")}>
+            <SelectTrigger id="frequency">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {SAVINGS_FREQUENCIES.map((f) => (
+                <SelectItem key={f} value={f}>{FREQUENCY_LABELS[f]}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground">
+            Al dispersar, el monto se prorratea según la frecuencia de tu ingreso.
+          </p>
+        </div>
+      )}
 
       <div className="space-y-2">
         <Label htmlFor="incomeSourceId">Fuente de ingreso vinculada</Label>
