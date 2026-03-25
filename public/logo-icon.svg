@@ -1,7 +1,15 @@
-<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="64" height="64" rx="16" fill="#111827"/>
-  <path d="M23 24H41" stroke="#F59E0B" stroke-width="3.2" stroke-linecap="round"/>
-  <path d="M32 24C21 24 14 32 14 43C14 54 22 59 32 59C42 59 50 54 50 43C50 32 43 24 32 24Z" fill="#10B981"/>
-  <circle cx="32" cy="41" r="8" fill="white"/>
-  <path d="M32 36.5V45.5" stroke="#10B981" stroke-width="2.2" stroke-linecap="round"/>
+<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bag_gradient" x1="34" y1="28" x2="136" y2="146" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#34D399"/>
+      <stop offset="1" stop-color="#10B981"/>
+    </linearGradient>
+  </defs>
+  <rect width="180" height="180" rx="40" fill="#111827"/>
+  <path d="M72 50C72 50 78 62 90 62C102 62 108 50 108 50" stroke="#F59E0B" stroke-width="8" stroke-linecap="round"/>
+  <path d="M66 71H114" stroke="#F59E0B" stroke-width="8" stroke-linecap="round"/>
+  <path d="M90 71C59 71 38 96 38 130C38 163 61 178 90 178C119 178 142 163 142 130C142 96 121 71 90 71Z" fill="url(#bag_gradient)"/>
+  <circle cx="90" cy="125" r="24" fill="white"/>
+  <path d="M90 111V139" stroke="#10B981" stroke-width="6" stroke-linecap="round"/>
+  <path d="M101 116C101 111 97 108 90 108C83 108 79 111 79 116C79 121 84 123 90 125C97 127 101 130 101 135C101 140 96 143 90 143C84 143 79 140 79 135" stroke="#10B981" stroke-width="4.5" stroke-linecap="round"/>
 </svg>
