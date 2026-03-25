@@ -13,6 +13,8 @@ const creditFields = z.object({
   cutOffDay: z.coerce.number().int().min(1).max(31),
   paymentDay: z.coerce.number().int().min(1).max(31),
   interestRate: z.coerce.number().min(0).default(0),
+  currentBalance: z.coerce.number().min(0).optional(),
+  monthlyPayment: z.coerce.number().min(0).optional(),
 });
 
 export const cardSchema = baseSchema
@@ -25,6 +27,8 @@ export const cardSchema = baseSchema
         cutOffDay: z.coerce.number().optional(),
         paymentDay: z.coerce.number().optional(),
         interestRate: z.coerce.number().optional(),
+        currentBalance: z.coerce.number().optional(),
+        monthlyPayment: z.coerce.number().optional(),
       }),
     ])
   )
@@ -40,6 +44,8 @@ export const cardSchema = baseSchema
         cutOffDay: null,
         paymentDay: null,
         interestRate: null,
+        currentBalance: null,
+        monthlyPayment: null,
       };
     }
     return {
@@ -52,6 +58,8 @@ export const cardSchema = baseSchema
       cutOffDay: data.cutOffDay,
       paymentDay: data.paymentDay,
       interestRate: data.interestRate,
+      currentBalance: data.currentBalance ?? null,
+      monthlyPayment: data.monthlyPayment ?? null,
     };
   });
 

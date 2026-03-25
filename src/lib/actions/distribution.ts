@@ -189,6 +189,30 @@ export async function calculateDistribution(incomeSourceId: string): Promise<Dis
     // Expenses paid from INCOME_SOURCE go ungrouped — skip for now
   }
 
+  // Add card monthlyPayment as a line item in the card group
+  for (const card of cards) {
+    if (card.type !== "CREDIT" || !card.monthlyPayment) continue;
+    const payment = Number(card.monthlyPayment);
+    if (payment <= 0) continue;
+    const perPaycheck = round2(payment / timesPerMonth);
+
+    let group = groupMap.get(card.id);
+    if (!group) {
+      group = {
+        cardId: card.id,
+        cardName: card.name,
+        cardBank: card.bank,
+        lastFourDigits: card.lastFourDigits,
+        paymentDay: card.paymentDay,
+        expenses: [],
+        totalPerPaycheck: 0,
+      };
+      groupMap.set(card.id, group);
+    }
+    group.expenses.push({ id: `card-payment-${card.id}`, name: "Pago de tarjeta", totalMonthly: payment, perPaycheck });
+    group.totalPerPaycheck = round2(group.totalPerPaycheck + perPaycheck);
+  }
+
   const cardGroups = [...groupMap.values()];
 
   // Loans prorated per paycheck

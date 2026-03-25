@@ -16,6 +16,8 @@ export default async function EditCardPage({
     ...card,
     creditLimit: card.creditLimit ? Number(card.creditLimit) : null,
     interestRate: card.interestRate ? Number(card.interestRate) : null,
+    currentBalance: card.currentBalance ? Number(card.currentBalance) : null,
+    monthlyPayment: card.monthlyPayment ? Number(card.monthlyPayment) : null,
     createdAt: card.createdAt.toISOString(),
     updatedAt: card.updatedAt.toISOString(),
   };

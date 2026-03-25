@@ -31,6 +31,8 @@ interface Props {
     cutOffDay: number | null;
     paymentDay: number | null;
     interestRate: number | null;
+    currentBalance: number | null;
+    monthlyPayment: number | null;
   };
 }
 
@@ -184,6 +186,34 @@ export function CardForm({ card }: Props) {
               Tasa anual. Se usa para calcular intereses en la tabla de amortización.
             </p>
           </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label htmlFor="currentBalance">Saldo actual (opcional)</Label>
+              <Input
+                id="currentBalance"
+                name="currentBalance"
+                type="number"
+                step="0.01"
+                defaultValue={card?.currentBalance?.toString() ?? ""}
+                placeholder="0.00"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="monthlyPayment">Pago mensual (opcional)</Label>
+              <Input
+                id="monthlyPayment"
+                name="monthlyPayment"
+                type="number"
+                step="0.01"
+                defaultValue={card?.monthlyPayment?.toString() ?? ""}
+                placeholder="0.00"
+              />
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground -mt-2">
+            Si tienes compras a meses u otros cargos, pon cuánto debes y cuánto pagas al mes. Se incluye en la dispersión.
+          </p>
         </>
       )}
 

@@ -27,7 +27,9 @@
 - id, userId, name, bank, lastFourDigits
 - type: `CREDIT` | `DEBIT`
 - network: `VISA` | `MASTERCARD` | `AMEX` | `OTHER`
-- Solo crédito: creditLimit, cutOffDay, paymentDay, interestRate
+- Solo crédito: creditLimit, cutOffDay, paymentDay, interestRate, currentBalance?, monthlyPayment?
+- currentBalance: saldo actual de la tarjeta (informativo + cálculo de crédito disponible)
+- monthlyPayment: cuánto paga al mes (se incluye en la dispersión como line item de la tarjeta)
 - Relación inversa: incomeSources (fuentes de ingreso que depositan en esta tarjeta)
 
 ### Loan

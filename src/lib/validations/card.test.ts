@@ -70,4 +70,38 @@ describe("cardSchema", () => {
       expect(result.data.cutOffDay).toBeNull();
     }
   });
+
+  it("validates credit card with balance and payment", () => {
+    const result = cardSchema.safeParse({
+      ...validCredit,
+      currentBalance: 25000,
+      monthlyPayment: 3500,
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.currentBalance).toBe(25000);
+      expect(result.data.monthlyPayment).toBe(3500);
+    }
+  });
+
+  it("nullifies balance fields for debit cards", () => {
+    const result = cardSchema.safeParse({
+      ...validDebit,
+      currentBalance: 5000,
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.currentBalance).toBeNull();
+      expect(result.data.monthlyPayment).toBeNull();
+    }
+  });
+
+  it("credit card without balance fields defaults to null", () => {
+    const result = cardSchema.safeParse(validCredit);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.currentBalance).toBeNull();
+      expect(result.data.monthlyPayment).toBeNull();
+    }
+  });
 });

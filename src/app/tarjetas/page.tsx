@@ -63,6 +63,30 @@ export default async function CardsPage() {
                     <p className="text-xs">Pago</p>
                     <p className="font-medium text-foreground">Día {card.paymentDay}</p>
                   </div>
+                  {card.currentBalance != null && (
+                    <div>
+                      <p className="text-xs">Saldo actual</p>
+                      <p className="font-medium text-destructive">
+                        ${Number(card.currentBalance).toLocaleString("es-MX", { minimumFractionDigits: 2 })}
+                      </p>
+                    </div>
+                  )}
+                  {card.monthlyPayment != null && (
+                    <div>
+                      <p className="text-xs">Pago mensual</p>
+                      <p className="font-medium text-foreground">
+                        ${Number(card.monthlyPayment).toLocaleString("es-MX", { minimumFractionDigits: 2 })}
+                      </p>
+                    </div>
+                  )}
+                  {card.currentBalance != null && card.creditLimit != null && (
+                    <div>
+                      <p className="text-xs">Disponible</p>
+                      <p className="font-medium text-green-600">
+                        ${(Number(card.creditLimit) - Number(card.currentBalance)).toLocaleString("es-MX", { minimumFractionDigits: 2 })}
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
 
