@@ -122,19 +122,21 @@ export function SavingsFundForm({ fund, incomeSources }: Props) {
             No tienes fuentes de ingreso activas.
           </p>
         ) : (
-          <Select name="incomeSourceId" defaultValue={fund?.incomeSourceId}>
-            <SelectTrigger id="incomeSourceId">
-              <SelectValue placeholder="Selecciona" />
-            </SelectTrigger>
-            <SelectContent>
-              {incomeSources.map((src) => (
-                <SelectItem key={src.id} value={src.id}>{src.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <p className="text-xs text-muted-foreground">
-            El ahorro se descuenta de este ingreso al hacer la dispersión.
-          </p>
+          <>
+            <Select name="incomeSourceId" defaultValue={fund?.incomeSourceId}>
+              <SelectTrigger id="incomeSourceId">
+                <SelectValue placeholder="Selecciona" />
+              </SelectTrigger>
+              <SelectContent>
+                {incomeSources.map((src) => (
+                  <SelectItem key={src.id} value={src.id}>{src.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              El ahorro se descuenta de este ingreso al hacer la dispersión.
+            </p>
+          </>
         )}
       </div>
 
