@@ -22,9 +22,9 @@ Registro de mejoras identificadas durante el análisis del proyecto. Se van tach
 
 ## Modelo de datos
 
-- [ ] **Categorías como strings** — `RecurringExpense.category` y `Expense.category` son `String?` en vez de un enum de Prisma. Permite valores inválidos en BD.
+- [x] **Categorías como strings** — `RecurringExpense.category` y `Expense.category` eran `String?`. Migrado a enum `ExpenseCategory` de Prisma con 13 valores. Migración preserva datos existentes. Validaciones Zod actualizadas.
 - [ ] **`DistributionDetail` sin constraints** — `destinationType` y `destinationId` son strings libres sin validación de que apuntan a una entidad real.
-- [ ] **Índices faltantes** — No hay índices compuestos explícitos. Queries filtradas por `userId` + otros campos se beneficiarían de índices como `(userId, active)` o `(userId, date)`.
+- [x] **Índices faltantes** — Agregados 6 índices compuestos: `IncomeSource(userId, active)`, `Card(userId, type)`, `Loan(userId)`, `RecurringExpense(userId)`, `Expense(userId, date)`, `ShoppingSession(userId, status)`.
 
 ## Performance
 
