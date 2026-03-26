@@ -29,10 +29,24 @@ export async function POST(req: NextRequest) {
   const parsed = shoppingItemSchema.safeParse(data);
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
 
+  // If barcode provided but no productId, create global Product
+  let productId = data.productId ?? null;
+  if (!productId && data.barcode) {
+    const existing = await prisma.product.findUnique({ where: { barcode: data.barcode } });
+    if (existing) {
+      productId = existing.id;
+    } else {
+      const created = await prisma.product.create({
+        data: { barcode: data.barcode, name: parsed.data.name, source: "MANUAL" },
+      });
+      productId = created.id;
+    }
+  }
+
   const item = await prisma.shoppingItem.create({
     data: {
       shoppingSessionId: sessionId,
-      productId: data.productId ?? null,
+      productId,
       name: parsed.data.name,
       barcode: data.barcode ?? null,
       estimatedPrice: parsed.data.estimatedPrice,
