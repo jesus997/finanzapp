@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { Navbar } from "@/components/navbar";
 import { MobileBottomBar } from "@/components/mobile-bottom-bar";
 import { NavigationProgress } from "@/components/navigation-progress";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -65,6 +66,7 @@ export default async function RootLayout({
           </div>
         </footer>
         {user && <MobileBottomBar user={user} isAdmin={admin} />}
+        <Analytics />
       </body>
     </html>
   );
