@@ -1,0 +1,7 @@
+---
+description: "Análisis de mejoras, optimizaciones y problemas del código"
+globs: 
+alwaysApply: false
+---
+
+Cuando el usuario pida un análisis de código, auditoría o revisión de mejoras, lee y ejecuta las instrucciones del archivo `.ai/prompts/code-audit.md`.
