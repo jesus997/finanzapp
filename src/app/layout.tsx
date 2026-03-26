@@ -66,7 +66,7 @@ export default async function RootLayout({
           </div>
         </footer>
         {user && <MobileBottomBar user={user} isAdmin={admin} />}
-        <Analytics />
+        {process.env.NEXT_PUBLIC_VERCEL_ANALYTICS === "true" && <Analytics />}
       </body>
     </html>
   );
