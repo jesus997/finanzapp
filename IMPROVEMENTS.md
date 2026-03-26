@@ -33,5 +33,5 @@ Registro de mejoras identificadas durante el análisis del proyecto. Se van tach
 
 ## UX / Código
 
-- [ ] **SVGs inline en dashboard** — 9 iconos SVG inline (~50 líneas) en `page.tsx`. Podrían usar Lucide (ya es dependencia).
-- [ ] **`fmt()` duplicado** — El formateador de moneda se define localmente en múltiples archivos en vez de estar centralizado en utils.
+- [x] **SVGs inline en dashboard** — 9 iconos SVG inline (~50 líneas) en `page.tsx`. Reemplazados por iconos de Lucide (ya era dependencia).
+- [x] **`fmt()` duplicado** — El formateador de moneda se definía en 14 archivos. Centralizado como `formatCurrency` en `src/lib/utils.ts`, importado con alias `fmt`.
