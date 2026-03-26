@@ -28,8 +28,8 @@ Registro de mejoras identificadas durante el análisis del proyecto. Se van tach
 
 ## Performance
 
-- [ ] **9 queries por carga de dashboard** — `getDashboardStats` llama a `getCalendarEvents` (5 queries) + 4 queries propias. Sin caching.
-- [ ] **Sin caching** — No usa `unstable_cache` ni `revalidateTag`. Cada visita recalcula todo.
+- [x] **9 queries por carga de dashboard** — Queries cacheadas con `unstable_cache` (5 min TTL). Calendar y dashboard data se cachean por usuario con tags para invalidación on-demand.
+- [x] **Sin caching** — Implementado `unstable_cache` con `revalidateTag` en `src/lib/data/dashboard.ts`. Invalidación automática vía `invalidateUserCache()` en todos los server actions que mutan datos.
 
 ## UX / Código
 
