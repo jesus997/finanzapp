@@ -113,6 +113,22 @@ enum PaymentMethodType {
   INCOME_SOURCE
 }
 
+enum ExpenseCategory {
+  HOUSING
+  UTILITIES
+  SUBSCRIPTIONS
+  INSURANCE
+  TRANSPORTATION
+  FOOD
+  EDUCATION
+  HEALTH
+  ENTERTAINMENT
+  PERSONAL
+  PETS
+  DONATIONS
+  OTHER
+}
+
 enum SavingsType {
   FIXED_AMOUNT
   PERCENTAGE
@@ -144,6 +160,8 @@ model IncomeSource {
   depositCard   Card?         @relation(fields: [depositCardId], references: [id])
   savingsFunds  SavingsFund[]
   distributions Distribution[]
+
+  @@index([userId, active])
 }
 
 enum CardType {
@@ -178,6 +196,8 @@ model Card {
 
   user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   incomeSources IncomeSource[]
+
+  @@index([userId, type])
 }
 
 model Loan {
@@ -199,6 +219,8 @@ model Loan {
   updatedAt        DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model RecurringExpense {
@@ -213,11 +235,13 @@ model RecurringExpense {
   endDate           DateTime?
   paymentMethodType PaymentMethodType
   paymentMethodId   String
-  category          String?
+  category          ExpenseCategory?
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model SavingsFund {
@@ -267,13 +291,15 @@ model Expense {
   description       String?
   amount            Decimal
   date              DateTime
-  category          String?
+  category          ExpenseCategory?
   paymentMethodType PaymentMethodType
   paymentMethodId   String
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, date])
 }
 
 // ── Invitations ─────────────────────────────────────────────
@@ -362,6 +388,8 @@ model ShoppingSession {
   user  User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   store Store           @relation(fields: [storeId], references: [id])
   items ShoppingItem[]
+
+  @@index([userId, status])
 }
 
 model ShoppingItem {

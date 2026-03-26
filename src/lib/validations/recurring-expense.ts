@@ -30,7 +30,14 @@ export const recurringExpenseSchema = z
     endDate: z.preprocess((v) => (v === "" ? undefined : v), z.coerce.date().optional()),
     paymentMethodType: z.enum(["CREDIT_CARD", "DEBIT_CARD", "INCOME_SOURCE"]),
     paymentMethodId: z.string().min(1, "El método de pago es requerido"),
-    category: z.string().optional(),
+    category: z.preprocess(
+      (v) => (v === "" ? undefined : v),
+      z.enum([
+        "HOUSING", "UTILITIES", "SUBSCRIPTIONS", "INSURANCE", "TRANSPORTATION",
+        "FOOD", "EDUCATION", "HEALTH", "ENTERTAINMENT", "PERSONAL",
+        "PETS", "DONATIONS", "OTHER",
+      ]).optional(),
+    ),
   })
   .refine(
     (data) => {
