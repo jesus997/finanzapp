@@ -7,7 +7,7 @@ import {
   PopoverTrigger,
   PopoverContent,
 } from "@/components/ui/popover";
-import type { CalendarEvent } from "@/lib/actions/calendar";
+import type { CalendarEvent } from "@/lib/types/calendar";
 import { formatCurrency as fmt } from "@/lib/utils";
 
 const EVENT_STYLES: Record<string, string> = {

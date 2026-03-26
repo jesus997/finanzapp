@@ -6,6 +6,7 @@ import { expenseSchema } from "@/lib/validations/expense";
 import { validatePaymentMethod } from "@/lib/actions/validate-payment-method";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { invalidateUserCache } from "@/lib/data/invalidate";
 
 export async function getExpenses() {
   const userId = await getAuthUserId();
@@ -36,6 +37,7 @@ export async function createExpense(formData: FormData) {
     data: { ...rest, date: new Date(date), userId },
   });
 
+  invalidateUserCache(userId);
   revalidatePath("/gastos-diarios");
   redirect("/gastos-diarios");
 }
@@ -57,6 +59,7 @@ export async function updateExpense(id: string, formData: FormData) {
     data: { ...rest, date: new Date(date) },
   });
 
+  invalidateUserCache(userId);
   revalidatePath("/gastos-diarios");
   redirect("/gastos-diarios");
 }
@@ -64,6 +67,7 @@ export async function updateExpense(id: string, formData: FormData) {
 export async function deleteExpense(id: string) {
   const userId = await getAuthUserId();
   await prisma.expense.deleteMany({ where: { id, userId } });
+  invalidateUserCache(userId);
   revalidatePath("/gastos-diarios");
 }
 

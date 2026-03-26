@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { shoppingItemSchema, storeSchema } from "@/lib/validations/shopping";
 import { validatePaymentMethod } from "@/lib/actions/validate-payment-method";
+import { invalidateUserCache } from "@/lib/data/invalidate";
 
 // ── Stores ──────────────────────────────────────────────────
 
@@ -327,6 +328,7 @@ export async function completeShoppingSession(
     });
   });
 
+  invalidateUserCache(userId);
   revalidatePath("/compras");
   revalidatePath("/gastos-diarios");
   revalidatePath("/");
@@ -336,5 +338,6 @@ export async function completeShoppingSession(
 export async function deleteShoppingSession(id: string) {
   const userId = await getAuthUserId();
   await prisma.shoppingSession.deleteMany({ where: { id, userId } });
+  invalidateUserCache(userId);
   revalidatePath("/compras");
 }

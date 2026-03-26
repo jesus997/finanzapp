@@ -5,6 +5,7 @@ import { getAuthUserId } from "@/lib/auth-utils";
 import { incomeSourceSchema } from "@/lib/validations/income-source";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { invalidateUserCache } from "@/lib/data/invalidate";
 
 export async function getIncomeSources() {
   const userId = await getAuthUserId();
@@ -45,6 +46,7 @@ export async function createIncomeSource(formData: FormData) {
     data: { ...parsed.data, userId },
   });
 
+  invalidateUserCache(userId);
   revalidatePath("/ingresos");
   redirect("/ingresos");
 }
@@ -67,6 +69,7 @@ export async function updateIncomeSource(id: string, formData: FormData) {
     data: parsed.data,
   });
 
+  invalidateUserCache(userId);
   revalidatePath("/ingresos");
   redirect("/ingresos");
 }
@@ -74,5 +77,6 @@ export async function updateIncomeSource(id: string, formData: FormData) {
 export async function deleteIncomeSource(id: string) {
   const userId = await getAuthUserId();
   await prisma.incomeSource.deleteMany({ where: { id, userId } });
+  invalidateUserCache(userId);
   revalidatePath("/ingresos");
 }

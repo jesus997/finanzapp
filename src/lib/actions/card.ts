@@ -5,6 +5,7 @@ import { getAuthUserId } from "@/lib/auth-utils";
 import { cardSchema } from "@/lib/validations/card";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { invalidateUserCache } from "@/lib/data/invalidate";
 
 export async function getCards() {
   const userId = await getAuthUserId();
@@ -78,6 +79,7 @@ export async function createCard(formData: FormData) {
     data: { ...parsed.data, userId },
   });
 
+  invalidateUserCache(userId);
   revalidatePath("/tarjetas");
   redirect("/tarjetas");
 }
@@ -96,6 +98,7 @@ export async function updateCard(id: string, formData: FormData) {
     data: parsed.data,
   });
 
+  invalidateUserCache(userId);
   revalidatePath("/tarjetas");
   redirect("/tarjetas");
 }
@@ -103,5 +106,6 @@ export async function updateCard(id: string, formData: FormData) {
 export async function deleteCard(id: string) {
   const userId = await getAuthUserId();
   await prisma.card.deleteMany({ where: { id, userId } });
+  invalidateUserCache(userId);
   revalidatePath("/tarjetas");
 }

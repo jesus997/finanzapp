@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getAuthUserId } from "@/lib/auth-utils";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { invalidateUserCache } from "@/lib/data/invalidate";
 
 /** How many times per month does this income frequency pay? */
 function incomeTimesPerMonth(frequency: string): number {
@@ -295,6 +296,7 @@ export async function createDistribution(
     }
   });
 
+  invalidateUserCache(userId);
   revalidatePath("/dispersiones");
   revalidatePath("/ahorro");
   redirect("/dispersiones");
@@ -325,6 +327,7 @@ export async function deleteDistribution(id: string) {
     await tx.distribution.deleteMany({ where: { id, userId } });
   });
 
+  invalidateUserCache(userId);
   revalidatePath("/dispersiones");
   revalidatePath("/ahorro");
 }

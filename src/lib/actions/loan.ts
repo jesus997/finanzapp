@@ -5,6 +5,7 @@ import { getAuthUserId } from "@/lib/auth-utils";
 import { loanSchema, estimateEndDate } from "@/lib/validations/loan";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { invalidateUserCache } from "@/lib/data/invalidate";
 
 export async function getLoans() {
   const userId = await getAuthUserId();
@@ -35,6 +36,7 @@ export async function createLoan(formData: FormData) {
     data: { ...rest, endDate: computedEndDate, userId },
   });
 
+  invalidateUserCache(userId);
   revalidatePath("/prestamos");
   redirect("/prestamos");
 }
@@ -56,6 +58,7 @@ export async function updateLoan(id: string, formData: FormData) {
     data: { ...rest, endDate: computedEndDate },
   });
 
+  invalidateUserCache(userId);
   revalidatePath("/prestamos");
   redirect("/prestamos");
 }
@@ -63,5 +66,6 @@ export async function updateLoan(id: string, formData: FormData) {
 export async function deleteLoan(id: string) {
   const userId = await getAuthUserId();
   await prisma.loan.deleteMany({ where: { id, userId } });
+  invalidateUserCache(userId);
   revalidatePath("/prestamos");
 }

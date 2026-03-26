@@ -5,6 +5,7 @@ import { getAuthUserId } from "@/lib/auth-utils";
 import { savingsFundSchema } from "@/lib/validations/savings-fund";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { invalidateUserCache } from "@/lib/data/invalidate";
 
 export async function getSavingsFunds() {
   const userId = await getAuthUserId();
@@ -41,6 +42,7 @@ export async function createSavingsFund(formData: FormData) {
     data: { ...parsed.data, userId },
   });
 
+  invalidateUserCache(userId);
   revalidatePath("/ahorro");
   redirect("/ahorro");
 }
@@ -59,6 +61,7 @@ export async function updateSavingsFund(id: string, formData: FormData) {
     data: parsed.data,
   });
 
+  invalidateUserCache(userId);
   revalidatePath("/ahorro");
   redirect("/ahorro");
 }
@@ -66,5 +69,6 @@ export async function updateSavingsFund(id: string, formData: FormData) {
 export async function deleteSavingsFund(id: string) {
   const userId = await getAuthUserId();
   await prisma.savingsFund.deleteMany({ where: { id, userId } });
+  invalidateUserCache(userId);
   revalidatePath("/ahorro");
 }

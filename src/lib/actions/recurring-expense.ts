@@ -6,6 +6,7 @@ import { recurringExpenseSchema } from "@/lib/validations/recurring-expense";
 import { validatePaymentMethod } from "@/lib/actions/validate-payment-method";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { invalidateUserCache } from "@/lib/data/invalidate";
 
 export async function getRecurringExpenses() {
   const userId = await getAuthUserId();
@@ -44,6 +45,7 @@ export async function createRecurringExpense(formData: FormData) {
     data: { ...parsed.data, userId },
   });
 
+  invalidateUserCache(userId);
   revalidatePath("/gastos");
   redirect("/gastos");
 }
@@ -64,6 +66,7 @@ export async function updateRecurringExpense(id: string, formData: FormData) {
     data: parsed.data,
   });
 
+  invalidateUserCache(userId);
   revalidatePath("/gastos");
   redirect("/gastos");
 }
@@ -71,5 +74,6 @@ export async function updateRecurringExpense(id: string, formData: FormData) {
 export async function deleteRecurringExpense(id: string) {
   const userId = await getAuthUserId();
   await prisma.recurringExpense.deleteMany({ where: { id, userId } });
+  invalidateUserCache(userId);
   revalidatePath("/gastos");
 }

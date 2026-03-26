@@ -1,8 +1,7 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
 import { getAuthUserId } from "@/lib/auth-utils";
-import { getCalendarEvents } from "@/lib/actions/calendar";
+import { getCachedCalendarEvents, getCachedDashboardData } from "@/lib/data/dashboard";
 
 export interface UpcomingEvent {
   label: string;
@@ -38,28 +37,11 @@ export async function getDashboardStats(): Promise<DashboardStats> {
   const year = now.getFullYear();
   const month = now.getMonth() + 1;
 
-  const [events, savingsFunds, loans, dailyExpensesTotal, inProgressSessions] = await Promise.all([
-    getCalendarEvents(year, month),
-    prisma.savingsFund.findMany({
-      where: { userId },
-      select: { accumulatedBalance: true },
-    }),
-    prisma.loan.findMany({
-      where: { userId },
-      select: { remainingBalance: true },
-    }),
-    prisma.expense.aggregate({
-      where: { userId, date: { gte: new Date(year, month - 1, 1), lt: new Date(year, month, 1) } },
-      _sum: { amount: true },
-    }),
-    prisma.shoppingSession.findMany({
-      where: { userId, status: "IN_PROGRESS" },
-      orderBy: { date: "desc" },
-      include: { store: { select: { name: true } }, _count: { select: { items: true } } },
-    }),
+  const [events, data] = await Promise.all([
+    getCachedCalendarEvents(userId, year, month),
+    getCachedDashboardData(userId),
   ]);
 
-  // Monthly totals from calendar events
   let monthlyIncome = 0;
   let monthlyExpenses = 0;
   let monthlyLoans = 0;
@@ -71,40 +53,24 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     else if (e.type === "loan") monthlyLoans += e.amount;
   }
 
-  monthlyExpenses += Number(dailyExpensesTotal._sum.amount ?? 0);
-
+  monthlyExpenses += data.dailyExpensesAmount;
   const projectedBalance = monthlyIncome - monthlyExpenses - monthlyLoans;
 
-  const totalSavings = savingsFunds.reduce(
-    (s, f) => s + Number(f.accumulatedBalance), 0,
-  );
-
-  const totalDebt = loans.reduce(
-    (s, l) => s + Number(l.remainingBalance), 0,
-  );
-
-  // Upcoming: next events from today onwards (max 5)
   const upcoming = events
     .filter((e) => e.day >= today && e.amount != null)
     .slice(0, 5)
     .map((e) => ({ label: e.label, day: e.day, amount: e.amount, type: e.type, detail: e.detail }));
 
-  const activeShopping: ActiveShopping[] = inProgressSessions.map((s) => ({
-    id: s.id,
-    name: s.name,
-    storeName: s.store.name,
-    itemCount: s._count.items,
-    estimatedTotal: Number(s.estimatedTotal),
-  }));
+  const round = (n: number) => Math.round(n * 100) / 100;
 
   return {
-    monthlyIncome: Math.round(monthlyIncome * 100) / 100,
-    monthlyExpenses: Math.round(monthlyExpenses * 100) / 100,
-    monthlyLoans: Math.round(monthlyLoans * 100) / 100,
-    projectedBalance: Math.round(projectedBalance * 100) / 100,
-    totalSavings: Math.round(totalSavings * 100) / 100,
-    totalDebt: Math.round(totalDebt * 100) / 100,
+    monthlyIncome: round(monthlyIncome),
+    monthlyExpenses: round(monthlyExpenses),
+    monthlyLoans: round(monthlyLoans),
+    projectedBalance: round(projectedBalance),
+    totalSavings: round(data.totalSavings),
+    totalDebt: round(data.totalDebt),
     upcoming,
-    activeShopping,
+    activeShopping: data.inProgressSessions,
   };
 }
