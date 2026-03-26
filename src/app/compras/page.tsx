@@ -3,9 +3,7 @@ import { buttonVariants } from "@/components/ui/button-variants";
 import { getShoppingSessions } from "@/lib/actions/shopping";
 import { SHOPPING_SESSION_STATUS_LABELS } from "@/lib/constants";
 import { deleteShoppingSession } from "@/lib/actions/shopping";
-
-const fmt = (n: number) =>
-  `$${n.toLocaleString("es-MX", { minimumFractionDigits: 2 })}`;
+import { formatCurrency as fmt } from "@/lib/utils";
 
 export default async function ShoppingPage() {
   const sessions = await getShoppingSessions();

@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
-
-const fmt = (n: number) => `$${n.toLocaleString("es-MX", { minimumFractionDigits: 2 })}`;
+import { formatCurrency as fmt } from "@/lib/utils";
 
 interface Detail {
   id: string;

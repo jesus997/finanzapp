@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { BarcodeScanner } from "./barcode-scanner";
+import { formatCurrency as fmt } from "@/lib/utils";
 
 interface Item {
   id: string;
@@ -22,9 +23,6 @@ interface Props {
 }
 
 type PriceType = "unit" | "weight" | "fixed";
-
-const fmt = (n: number) =>
-  `$${n.toLocaleString("es-MX", { minimumFractionDigits: 2 })}`;
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 

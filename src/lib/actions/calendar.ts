@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { getAuthUserId } from "@/lib/auth-utils";
 import { INCOME_TYPE_LABELS, FREQUENCY_LABELS, LOAN_TYPE_LABELS } from "@/lib/constants";
+import { formatCurrency as fmt } from "@/lib/utils";
 
 export interface CalendarEvent {
   day: number;
@@ -33,7 +34,6 @@ export async function getCalendarEvents(year: number, month: number): Promise<Ca
 
   const events: CalendarEvent[] = [];
   const daysInMonth = new Date(year, month, 0).getDate();
-  const fmt = (n: number) => `$${n.toLocaleString("es-MX", { minimumFractionDigits: 2 })}`;
 
   // Income sources
   for (const src of incomeSources) {

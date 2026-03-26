@@ -7,6 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { formatCurrency as fmt } from "@/lib/utils";
 
 interface Event {
   label: string;
@@ -29,9 +30,6 @@ const EVENT_TYPE_LABELS: Record<string, string> = {
   loan: "Préstamo",
   expense: "Gasto",
 };
-
-const fmt = (n: number) =>
-  `$${n.toLocaleString("es-MX", { minimumFractionDigits: 2 })}`;
 
 export function UpcomingEvents({ events }: { events: Event[] }) {
   const [selected, setSelected] = useState<Event | null>(null);

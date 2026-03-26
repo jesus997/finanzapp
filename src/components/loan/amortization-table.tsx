@@ -11,9 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import type { AmortizationRow } from "@/lib/utils/amortization";
-
-const fmt = (n: number) =>
-  `$${n.toLocaleString("es-MX", { minimumFractionDigits: 2 })}`;
+import { formatCurrency as fmt } from "@/lib/utils";
 
 const PAGE_SIZE = 12;
 

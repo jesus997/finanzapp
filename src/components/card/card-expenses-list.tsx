@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { formatCurrency as fmt } from "@/lib/utils";
 
 interface RecurringExpense {
   id: string;
@@ -28,8 +29,6 @@ interface Props {
   expenses: RecurringExpense[];
   dailyExpenses: DailyExpense[];
 }
-
-const fmt = (n: number) => `$${n.toLocaleString("es-MX", { minimumFractionDigits: 2 })}`;
 
 export function CardExpensesList({ cardName, expenses, dailyExpenses }: Props) {
   const [open, setOpen] = useState(false);

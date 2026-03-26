@@ -12,6 +12,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { formatCurrency as fmt } from "@/lib/utils";
 
 interface Item {
   id: string;
@@ -31,9 +32,6 @@ interface Props {
   items: Item[];
   paymentOptions: PaymentOption[];
 }
-
-const fmt = (n: number) =>
-  `$${n.toLocaleString("es-MX", { minimumFractionDigits: 2 })}`;
 
 type Step = "closed" | "ask" | "review" | "pay";
 

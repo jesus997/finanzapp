@@ -7,9 +7,7 @@ import { getIncomeSources } from "@/lib/actions/income-source";
 import { ShoppingLiveList } from "@/components/shopping/shopping-live-list";
 import { CompleteShoppingForm } from "@/components/shopping/complete-shopping-form";
 import { SHOPPING_SESSION_STATUS_LABELS } from "@/lib/constants";
-
-const fmt = (n: number) =>
-  `$${n.toLocaleString("es-MX", { minimumFractionDigits: 2 })}`;
+import { formatCurrency as fmt } from "@/lib/utils";
 
 export default async function ShoppingSessionPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

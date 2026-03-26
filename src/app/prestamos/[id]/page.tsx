@@ -6,6 +6,7 @@ import { buttonVariants } from "@/components/ui/button-variants";
 import { Badge } from "@/components/ui/badge";
 import { AmortizationTable } from "@/components/loan/amortization-table";
 import { calculateAmortization } from "@/lib/utils/amortization";
+import { formatCurrency as fmt } from "@/lib/utils";
 
 export default async function LoanDetailPage({
   params,
@@ -22,8 +23,6 @@ export default async function LoanDetailPage({
   const interestRate = Number(loan.interestRate);
   const remainingBalance = Number(loan.remainingBalance);
   const freqLabel = LOAN_PAYMENT_FREQUENCY_LABELS[loan.paymentFrequency]?.toLowerCase() ?? "";
-  const fmt = (n: number) =>
-    `$${n.toLocaleString("es-MX", { minimumFractionDigits: 2 })}`;
 
   const amortization = calculateAmortization(
     totalAmount,

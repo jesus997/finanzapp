@@ -6,11 +6,11 @@ import {
 } from "@/components/ui/table";
 import { getExpenses, deleteExpense } from "@/lib/actions/expense";
 import { EXPENSE_CATEGORY_LABELS, PAYMENT_METHOD_TYPE_LABELS } from "@/lib/constants";
+import { formatCurrency as fmt } from "@/lib/utils";
 
 export default async function ExpensesPage() {
   const expenses = await getExpenses();
 
-  const fmt = (n: number) => `$${n.toLocaleString("es-MX", { minimumFractionDigits: 2 })}`;
   const fmtDate = (d: Date) => d.toLocaleDateString("es-MX", { day: "numeric", month: "short", year: "numeric" });
 
   return (

@@ -16,6 +16,7 @@ import {
   createDistribution,
   type DistributionPreview,
 } from "@/lib/actions/distribution";
+import { formatCurrency as fmt } from "@/lib/utils";
 
 interface IncomeSourceOption {
   id: string;
@@ -27,8 +28,6 @@ interface IncomeSourceOption {
 interface Props {
   incomeSources: IncomeSourceOption[];
 }
-
-const fmt = (n: number) => `$${n.toLocaleString("es-MX", { minimumFractionDigits: 2 })}`;
 
 export function NewDistributionForm({ incomeSources }: Props) {
   const [sourceId, setSourceId] = useState("");
