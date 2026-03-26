@@ -1,24 +1,26 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
+import { getAuthUserId } from "@/lib/auth-utils";
 
 export async function completeOnboarding() {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("No autorizado");
+  const userId = await getAuthUserId();
 
   await prisma.user.update({
-    where: { id: session.user.id },
+    where: { id: userId },
     data: { onboardingCompleted: true },
   });
 }
 
 export async function getOnboardingStatus(): Promise<boolean> {
-  const session = await auth();
-  if (!session?.user?.id) return true; // no user = skip
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { onboardingCompleted: true },
-  });
-  return user?.onboardingCompleted ?? false;
+  try {
+    const userId = await getAuthUserId();
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { onboardingCompleted: true },
+    });
+    return user?.onboardingCompleted ?? false;
+  } catch {
+    return true; // no user = skip
+  }
 }

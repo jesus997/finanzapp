@@ -1,16 +1,10 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
+import { getAuthUserId } from "@/lib/auth-utils";
 import { incomeSourceSchema } from "@/lib/validations/income-source";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-
-async function getAuthUserId() {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("No autorizado");
-  return session.user.id;
-}
 
 export async function getIncomeSources() {
   const userId = await getAuthUserId();

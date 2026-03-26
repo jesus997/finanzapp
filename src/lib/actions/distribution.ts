@@ -1,17 +1,9 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
+import { getAuthUserId } from "@/lib/auth-utils";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-
-async function getAuthUserId() {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("No autorizado");
-  return session.user.id;
-}
-
-// ── Helpers ─────────────────────────────────────────────────
 
 /** How many times per month does this income frequency pay? */
 function incomeTimesPerMonth(frequency: string): number {

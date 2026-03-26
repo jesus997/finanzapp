@@ -5,8 +5,7 @@ import { shoppingItemSchema } from "@/lib/validations/shopping";
 
 async function getAuthUserId() {
   const session = await auth();
-  if (!session?.user?.id) return null;
-  return session.user.id;
+  return session?.user?.id ?? null;
 }
 
 async function recalcTotal(sessionId: string) {

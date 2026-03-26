@@ -1,16 +1,11 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
+import { getAuthUserId } from "@/lib/auth-utils";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { shoppingItemSchema, storeSchema } from "@/lib/validations/shopping";
-
-async function getAuthUserId() {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("No autorizado");
-  return session.user.id;
-}
+import { validatePaymentMethod } from "@/lib/actions/validate-payment-method";
 
 // ── Stores ──────────────────────────────────────────────────
 
@@ -275,6 +270,8 @@ export async function completeShoppingSession(
     include: { items: true, store: true },
   });
   if (!session) throw new Error("Sesión no encontrada");
+
+  await validatePaymentMethod(userId, data.paymentMethodType, data.paymentMethodId);
 
   const finalTotal = data.finalItems.reduce((s, i) => s + i.finalPrice, 0);
   const round2 = (n: number) => Math.round(n * 100) / 100;

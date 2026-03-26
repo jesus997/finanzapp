@@ -1,14 +1,8 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
+import { getAuthUserId } from "@/lib/auth-utils";
 import { INCOME_TYPE_LABELS, FREQUENCY_LABELS, LOAN_TYPE_LABELS } from "@/lib/constants";
-
-async function getAuthUserId() {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("No autorizado");
-  return session.user.id;
-}
 
 export interface CalendarEvent {
   day: number;

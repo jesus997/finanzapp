@@ -1,17 +1,11 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
+import { getAuthUserId } from "@/lib/auth-utils";
 import { revalidatePath } from "next/cache";
 import { randomBytes } from "crypto";
 
 const MAX_INVITATIONS = 10;
-
-async function getAuthUserId() {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("No autorizado");
-  return session.user.id;
-}
 
 export async function getInvitations() {
   const userId = await getAuthUserId();

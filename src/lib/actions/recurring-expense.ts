@@ -1,16 +1,11 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
+import { getAuthUserId } from "@/lib/auth-utils";
 import { recurringExpenseSchema } from "@/lib/validations/recurring-expense";
+import { validatePaymentMethod } from "@/lib/actions/validate-payment-method";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-
-async function getAuthUserId() {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("No autorizado");
-  return session.user.id;
-}
 
 export async function getRecurringExpenses() {
   const userId = await getAuthUserId();
@@ -43,6 +38,8 @@ export async function createRecurringExpense(formData: FormData) {
     throw new Error("Datos inválidos");
   }
 
+  await validatePaymentMethod(userId, parsed.data.paymentMethodType, parsed.data.paymentMethodId);
+
   await prisma.recurringExpense.create({
     data: { ...parsed.data, userId },
   });
@@ -59,6 +56,8 @@ export async function updateRecurringExpense(id: string, formData: FormData) {
   if (!parsed.success) {
     throw new Error("Datos inválidos");
   }
+
+  await validatePaymentMethod(userId, parsed.data.paymentMethodType, parsed.data.paymentMethodId);
 
   await prisma.recurringExpense.update({
     where: { id, userId },
