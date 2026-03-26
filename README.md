@@ -4,21 +4,25 @@ Aplicación web open source para gestión de finanzas personales. Controla tus t
 
 ## Características
 
-- **Dashboard** — Resumen del mes (ingresos, gastos, préstamos, balance proyectado), ahorro acumulado, deuda total, próximos pagos e ingresos.
+- **Dashboard** — Resumen del mes (ingresos, gastos, préstamos, balance proyectado), ahorro acumulado, deuda total, próximos pagos e ingresos. Banner de compra en progreso con acceso directo.
 - **Fuentes de ingreso** — Nómina, aguinaldo, bonos, PTU, caja de ahorro, ingresos pasivos/activos, extraordinarios. Soporta frecuencias desde única hasta anual, con días de pago por día del mes o día de la semana. Vinculación opcional a tarjeta de depósito.
-- **Tarjetas** — Crédito y débito unificadas. Fecha de corte, pago, límite, tasa de interés. Soporte para Visa, Mastercard, Amex. Vista de gastos vinculados por tarjeta con toggle expandible.
+- **Tarjetas** — Crédito y débito unificadas. Fecha de corte, pago, límite, tasa de interés. Saldo actual y pago mensual opcionales para tarjetas de crédito (MSI, compras a meses). Soporte para Visa, Mastercard, Amex. Vista de gastos vinculados por tarjeta en dialog con tabs (periódicos y diarios).
 - **Préstamos** — Bancarios, nómina, automotrices, Infonavit, hipotecarios. Frecuencia de pago variable (diario, semanal, quincenal, mensual). Tabla de amortización con IVA sobre intereses. Fecha de fin estimada automáticamente si se omite. Barra de progreso visual.
 - **Gastos periódicos** — Mensuales, quincenales, bimestrales con fecha inicio/fin. 13 categorías predefinidas. Días de cobro específicos. Vinculados a tarjeta o fuente de ingreso.
 - **Gastos diarios** — Registro de gastos únicos con escaneo de tickets vía OCR (Tesseract.js). Toma una foto del ticket y se pre-llenan nombre, monto y fecha automáticamente. Integrado en dashboard y calendario.
-- **Apartados de ahorro** — Por cantidad fija o porcentaje de ingreso, vinculados a fuente de ingreso.
-- **Dispersión automática** — Al registrar ingreso, prorratea gastos y ahorros por cobro. Agrupa por tarjeta ("bolsas"). Soporte para revertir.
-- **Lista de compras** — Inicia una compra en el super, escanea códigos de barras con la cámara para agregar productos. Catálogo global (Open Food Facts + manual). Precios por tienda (Walmart, Oxxo, Soriana + custom). Total acumulado en tiempo real. Al pagar, escanea el ticket para validar precios reales. Genera gasto diario automáticamente.
-- **Calendario de pagos** — Vista mensual (grid en desktop, lista en móvil) con eventos de ingresos, tarjetas, préstamos y gastos. Navegación entre meses. Detalle al hacer click.
-- **Invitaciones** — Sistema de invitación por enlace único. Cada usuario puede generar hasta 10 invitaciones. El invitado ve quién lo invitó al crear su cuenta.
-- **Diseño responsive** — Optimizado para uso en móvil con menú hamburguesa, cards en mobile y tablas en desktop.
-- **Navegación mobile nativa** — Bottom bar con menú, accesos directos y FAB (+). Drawer lateral con swipe, perfil de usuario e info de la app. Barra de progreso global durante navegaciones.
+- **Apartados de ahorro** — Por cantidad fija (con frecuencia configurable) o porcentaje de ingreso, vinculados a fuente de ingreso. El monto fijo se prorratea en la dispersión según la frecuencia del ahorro vs la del ingreso.
+- **Dispersión automática** — Al registrar ingreso, prorratea gastos, pagos de tarjeta, préstamos y ahorros por cobro. Agrupa por tarjeta ("bolsas"). Soporte para revertir.
+- **Lista de compras** — Inicia una compra en el super, escanea códigos de barras con la cámara para agregar productos. Catálogo global (Open Food Facts + manual) con descripción opcional. Precios por tienda (Walmart, Oxxo, Soriana + custom con geolocalización). Total acumulado en tiempo real. Al pagar, escanea el ticket para validar precios reales. Genera gasto diario automáticamente.
+- **Calendario de pagos** — Vista mensual (grid en desktop, lista en móvil). En mobile muestra desde el día actual hacia adelante con opción de ver días anteriores. Navegación entre meses. Detalle al hacer click.
+- **Invitaciones** — Sistema de invitación por enlace único. Cada usuario puede generar hasta 10 invitaciones. Admin puede crear invitaciones ilimitadas, multi-uso y con etiqueta para tracking. El invitado ve quién lo invitó al crear su cuenta.
+- **Diseño responsive** — Optimizado para uso en móvil con menú hamburguesa, cards en mobile y tablas en desktop. Textos de ayuda contextuales en todos los formularios. Botón cancelar en todos los formularios CRUD.
+- **Navegación mobile nativa** — Bottom bar con menú, accesos directos y FAB (+). Drawer lateral con swipe, perfil de usuario e info de la app. Barra de progreso global durante navegaciones. Logo centrado en header mobile.
 - **Onboarding** — Tutorial guiado para nuevos usuarios que explica el concepto de la app y cómo usarla. Se muestra una sola vez.
-- **Panel de administración** — Estadísticas globales, lista de usuarios, invitaciones del sistema, gestión del catálogo de productos. Acceso controlado por `ADMIN_EMAILS`.
+- **Panel de administración** — Estadísticas globales, lista de usuarios, invitaciones del sistema (con creación multi-uso), gestión del catálogo de productos. Acceso controlado por `ADMIN_EMAILS`.
+- **Beta badge** — Indicador visual en el header con disclaimer sobre la fiabilidad de los datos.
+- **Branding** — Logo pack con icono, favicon SVG, apple touch icon, open graph image.
+- **Legal** — Páginas de privacidad y términos accesibles sin autenticación. Footer global con enlaces.
+- **Analytics** — Vercel Analytics opcional (opt-in vía `NEXT_PUBLIC_VERCEL_ANALYTICS`).
 - **Reportería** — Gasto por tarjeta, totales por periodo, balance general *(próximamente)*
 - **Integración IA (opcional)** — Categorización, recomendaciones, detección de gastos hormiga vía OpenAI *(próximamente)*
 
@@ -104,6 +108,11 @@ ADMIN_EMAILS="tu-email@ejemplo.com"
 OPENAI_API_KEY="tu-api-key"
 ```
 
+### Analytics (opcional)
+```
+NEXT_PUBLIC_VERCEL_ANALYTICS="true"
+```
+
 ## Scripts disponibles
 
 | Comando | Descripción |
@@ -126,6 +135,7 @@ finanzapp/
 │   │   │   ├── auth/            # API de autenticación
 │   │   │   ├── products/lookup/ # Búsqueda de productos por código de barras
 │   │   │   └── shopping/items/  # CRUD items de compra (API routes)
+│   │   ├── admin/             # Panel de administración
 │   │   ├── ingresos/          # CRUD fuentes de ingreso
 │   │   ├── tarjetas/          # CRUD tarjetas
 │   │   ├── prestamos/         # CRUD préstamos + detalle con amortización
@@ -136,8 +146,11 @@ finanzapp/
 │   │   ├── dispersiones/      # Dispersión automática
 │   │   ├── compras/           # Lista de compras con escaneo de códigos
 │   │   ├── invitaciones/        # Gestión de invitaciones
-│   │   └── invitar/[code]/      # Landing de invitación
+│   │   ├── invitar/[code]/      # Landing de invitación
+│   │   ├── privacy/           # Política de privacidad
+│   │   └── terms/             # Términos y condiciones
 │   ├── components/
+│   │   ├── admin/             # Componentes del panel admin
 │   │   ├── income-source/     # Componentes de ingresos
 │   │   ├── card/              # Componentes de tarjetas
 │   │   ├── loan/              # Componentes de préstamos y amortización
@@ -152,12 +165,14 @@ finanzapp/
 │   │   ├── desktop-nav-dropdown.tsx # Dropdowns del navbar desktop
 │   │   ├── navigation-progress.tsx # Barra de progreso global
 │   │   ├── upcoming-events.tsx    # Eventos próximos con dialog
+│   │   ├── beta-badge.tsx         # Badge BETA con disclaimer popup
 │   │   ├── copy-button.tsx        # Botón copiar al portapapeles
 │   │   ├── navbar.tsx         # Navegación principal (responsive)
 │   │   ├── mobile-menu.tsx    # Menú hamburguesa para móvil
 │   │   └── onboarding-tour.tsx # Tutorial guiado (Driver.js)
 │   ├── lib/
 │   │   ├── actions/           # Server Actions (CRUD + lógica)
+│   │   │   ├── admin.ts       # Panel de administración
 │   │   │   ├── dashboard.ts   # Estadísticas del home
 │   │   │   ├── calendar.ts    # Eventos del calendario
 │   │   │   ├── distribution.ts # Dispersión automática

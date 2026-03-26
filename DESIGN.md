@@ -149,9 +149,10 @@
 2. Sistema calcula cuántas veces al mes cobra (semanal=4, quincenal=2, mensual=1)
 3. Para cada gasto periódico: convierte a equivalente mensual y divide entre cobros al mes
 4. Agrupa gastos por tarjeta de crédito/débito → "bolsas" por tarjeta
-5. Prorratea préstamos por cobro (pago mensual ÷ cobros al mes), convirtiendo según frecuencia del préstamo
-6. Calcula ahorros vinculados (monto fijo o porcentaje del ingreso)
-7. Muestra resumen: bolsas por tarjeta + préstamos + ahorros + sobrante
+5. Incluye pago mensual de tarjetas de crédito (si configurado) como line item en la bolsa
+6. Prorratea préstamos por cobro (pago mensual ÷ cobros al mes), convirtiendo según frecuencia del préstamo
+7. Calcula ahorros vinculados: porcentaje del ingreso o monto fijo prorrateado según frecuencia del ahorro
+8. Muestra resumen: bolsas por tarjeta + préstamos + ahorros + sobrante
 8. Usuario confirma → se registra la dispersión y se actualizan saldos de ahorro
 9. Dispersiones se pueden revertir (revierte saldos de ahorro)
 
@@ -176,12 +177,12 @@ La app está optimizada para uso en móvil:
 
 - **Navbar**: menú hamburguesa en mobile, links horizontales en desktop
 - **Listas (ingresos, gastos)**: cards en mobile (`md:hidden`), tabla en desktop (`hidden md:block`)
-- **Calendario**: vista de lista por día en mobile, grid de 7 columnas en desktop
+- **Calendario**: vista de lista por día en mobile (desde hoy hacia adelante, con toggle para ver días anteriores), grid de 7 columnas en desktop
 - **Tabla de amortización**: scroll horizontal en pantallas pequeñas
 - **Dashboard**: grid `grid-cols-2` en mobile, `lg:grid-cols-4` en desktop
 - **Tarjetas de préstamos/ahorro**: ya usan `sm:grid-cols-2`, se adaptan bien
 - **Formularios**: `max-w-md` funciona en mobile sin cambios
-- **Tarjetas (cards page)**: vista de gastos por tarjeta con toggle expandible
+- **Tarjetas (cards page)**: vista de gastos por tarjeta en dialog con tabs (periódicos y diarios), totales por tab
 
 ### Navegación mobile nativa
 - **Bottom bar fija**: botón de menú, acceso directo a Inicio y Calendario, FAB (+) con acciones rápidas de creación
@@ -288,6 +289,8 @@ Funciona sin IA por defecto. Al configurar API key de OpenAI:
 | `/admin/usuarios` | ✅ | Lista de usuarios con invitaciones enviadas/usadas |
 | `/admin/invitaciones` | ✅ | Todas las invitaciones del sistema con estado |
 | `/admin/productos` | ✅ | Catálogo global de productos: editar, eliminar |
+| `/privacy` | ✅ | Política de privacidad (sin auth) |
+| `/terms` | ✅ | Términos y condiciones (sin auth) |
 | `/reportes` | 🔲 | Reportería y gráficas |
 | `/ia` | 🔲 | Chat y herramientas IA |
 | `/configuracion` | 🔲 | API keys, preferencias |
@@ -331,7 +334,28 @@ Panel exclusivo para administradores del sistema, protegido por `ADMIN_EMAILS` (
 
 El layout `/admin` verifica el email del usuario contra `ADMIN_EMAILS` y redirige a `/` si no es admin. No se requiere campo `role` en la BD.
 
-## 16. Roadmap / Pendientes
+## 16. UX: Textos de ayuda y botón cancelar
+
+- **Textos de ayuda contextuales** en todos los formularios CRUD, debajo de campos que pueden generar confusión (ej: "monto variable", "día de corte", "tasa de interés con IVA", "método de pago para dispersión", "frecuencia del ahorro")
+- **Botón cancelar** en todos los formularios CRUD usando `router.back()` para navegación consistente
+- Patrón: `<p className="text-xs text-muted-foreground">` debajo del campo
+
+## 17. Branding y Beta
+
+- **Logo pack**: icono (bolsa con $), favicon SVG, apple touch icon 180x180, open graph image 1200x630
+- **Header**: icono + "FinanzApp" + badge BETA. Logo centrado en mobile, alineado a la izquierda en desktop
+- **Beta badge**: pill amarillo "BETA" clickeable que muestra popover con disclaimer: "Esta aplicación está en desarrollo activo. Los cálculos y datos mostrados pueden contener errores."
+- **Favicon**: SVG con icono completo (asa curva, gradiente, signo $ completo)
+
+## 18. Legal y Analytics
+
+- **Privacidad** (`/privacy`): datos recopilados, uso, almacenamiento, terceros, derechos del usuario
+- **Términos** (`/terms`): descripción del servicio, limitación de responsabilidad, licencia BSL 1.1
+- **Footer global**: copyright, enlaces a privacidad y términos. Visible en todas las páginas
+- **Vercel Analytics**: opt-in vía `NEXT_PUBLIC_VERCEL_ANALYTICS="true"`. No se carga si no está habilitado
+- Páginas legales accesibles sin autenticación
+
+## 19. Roadmap / Pendientes
 
 ### Próximas funcionalidades
 - **Reportería** — Gasto por tarjeta, totales por periodo, balance general, gráficas de tendencia
