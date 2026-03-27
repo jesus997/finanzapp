@@ -29,3 +29,11 @@ FinanzApp es una app web open source de gestión de finanzas personales construi
 8. **OCR con provider abstracto**: `OcrProvider` interface en `src/lib/ocr/`. Tesseract.js ahora, OpenAI Vision después. No acoplar a un provider específico.
 9. **Catálogo de productos global**: `Product` no tiene `userId`, es compartido entre todos los usuarios. Los precios van en `ProductPrice` (por producto + tienda).
 10. **Escaneo de códigos de barras**: `html5-qrcode` con `facingMode: "environment"`. Resolución: BD local → Open Food Facts → manual.
+11. **Auth centralizado**: Importar `getAuthUserId` de `src/lib/auth-utils.ts`. No definir localmente en server actions.
+12. **Validación de paymentMethod**: Antes de escribir `paymentMethodId` a BD, llamar `validatePaymentMethod()` de `src/lib/actions/validate-payment-method.ts`.
+13. **Cache invalidation**: Después de mutaciones en server actions, llamar `invalidateUserCache(userId)` de `src/lib/data/invalidate.ts` antes de `revalidatePath()`.
+14. **Formateo de moneda**: Usar `import { formatCurrency as fmt } from "@/lib/utils"`. No definir `const fmt = ...` localmente.
+15. **Iconos**: Usar Lucide React. No usar SVGs inline.
+16. **Tipos compartidos**: Interfaces usadas por server actions y componentes van en `src/lib/types/`. No re-exportar tipos desde archivos `"use server"`.
+17. **Datos cacheados**: Funciones con `unstable_cache` van en `src/lib/data/`. Los archivos `"use server"` delegan a estas funciones pasando `userId` como argumento.
+18. **Productos en shopping**: Al agregar item con barcode sin productId, crear `Product` global (source: MANUAL). Productos sin barcode no se crean globalmente.

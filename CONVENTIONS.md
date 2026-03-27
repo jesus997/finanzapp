@@ -70,6 +70,9 @@ Seguir los estándares de Next.js:
 - Siempre verificar `userId` del session para seguridad.
 - Usar `revalidatePath()` después de mutaciones y `redirect()` para navegación.
 - Para eliminar con filtro compuesto (`id` + `userId`), usar `deleteMany` en vez de `delete`.
+- Importar `getAuthUserId` desde `src/lib/auth-utils.ts` (centralizado). No definir localmente.
+- Para mutaciones que escriben `paymentMethodId`, validar con `validatePaymentMethod()` de `src/lib/actions/validate-payment-method.ts`.
+- Después de mutaciones, llamar `invalidateUserCache(userId)` de `src/lib/data/invalidate.ts` antes de `revalidatePath()`.
 
 ### Validaciones Zod
 - Ubicar en `src/lib/validations/` con un archivo por entidad.
@@ -96,6 +99,10 @@ Seguir los estándares de Next.js:
 - Labels en español para la UI se centralizan en `src/lib/constants.ts`.
 - Catálogos (bancos, tipos, frecuencias) también van en constants.
 
+### Utilidades compartidas
+- Formateo de moneda: usar `formatCurrency` de `src/lib/utils.ts` (alias `fmt`). No definir formateadores locales.
+- Iconos: usar Lucide React (`lucide-react`). No usar SVGs inline.
+
 ### Diseño Responsive
 - La app se usa principalmente en móvil — el diseño responsive es crítico.
 - Patrón para listas: `<div className="grid gap-4 md:hidden">` para cards en mobile, `<div className="hidden md:block">` para tablas en desktop.
@@ -113,3 +120,10 @@ Seguir los estándares de Next.js:
 ### API Routes vs Server Actions
 - **Server Actions**: para operaciones CRUD estándar que navegan o revalidan la página (crear, editar, eliminar entidades).
 - **API Routes**: para operaciones en tiempo real donde el componente cliente maneja su propio estado (ej: lista de compras en vivo). Los Server Actions revalidan automáticamente la ruta actual, lo que causa recargas no deseadas.
+
+### Caching
+- Funciones de datos cacheadas van en `src/lib/data/` con `unstable_cache`.
+- Tags de cache por usuario: `calendar-{userId}`, `dashboard-{userId}`.
+- Invalidar con `invalidateUserCache(userId)` en cada server action que muta datos.
+- Los server actions (`"use server"`) no pueden usar `"use cache"`. Separar en archivos distintos.
+- Tipos compartidos entre server actions y componentes van en `src/lib/types/`.

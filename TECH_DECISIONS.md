@@ -250,6 +250,26 @@ Registro de decisiones técnicas tomadas durante el desarrollo del proyecto. Cad
   - Solo `loading.tsx`: No da feedback inmediato al tocar un link.
 - **Razón**: Zero dependencias, feedback visual inmediato al tocar cualquier link. Complementa los `loading.tsx` skeletons que aparecen después.
 
+## 26. Caching con unstable_cache
+
+**unstable_cache para queries frecuentes del dashboard**
+
+- **Decisión**: Cachear las queries del dashboard y calendario con `unstable_cache` (TTL 5 minutos, tags por usuario). Invalidación on-demand con `revalidateTag` en cada server action que muta datos.
+- **Alternativas descartadas**:
+  - `cacheComponents: true` con `'use cache'`: Requiere envolver toda la app en `<Suspense>` porque `auth()` usa cookies. Demasiado invasivo para el estado actual de la app.
+  - Sin caching: 9 queries por carga de dashboard, recalculando todo en cada visita.
+- **Razón**: `unstable_cache` funciona sin cambiar el modelo de rendering. El TTL de 5 minutos balancea frescura vs performance. La invalidación por tags garantiza que los datos se refrescan inmediatamente después de mutaciones.
+
+## 27. Centralización de auth y validaciones
+
+**getAuthUserId centralizado + validatePaymentMethod**
+
+- **Decisión**: `getAuthUserId()` en `src/lib/auth-utils.ts` (importado en 12 archivos). `validatePaymentMethod()` en `src/lib/actions/validate-payment-method.ts` para verificar referencias polimórficas.
+- **Alternativas descartadas**:
+  - Middleware de auth: Next.js middleware no tiene acceso a Prisma fácilmente.
+  - Foreign keys en BD para paymentMethod: Imposible con referencia polimórfica (apunta a Card o IncomeSource).
+- **Razón**: Elimina 12 definiciones duplicadas de `getAuthUserId`. La validación de paymentMethod previene datos huérfanos sin cambiar el schema de BD.
+
 ## Resumen del Stack
 
 | Capa | Tecnología | Versión |

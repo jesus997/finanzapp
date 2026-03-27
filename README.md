@@ -177,20 +177,30 @@ finanzapp/
 │   │   │   ├── calendar.ts    # Eventos del calendario
 │   │   │   ├── distribution.ts # Dispersión automática
 │   │   │   ├── invitation.ts  # CRUD invitaciones
+│   │   │   ├── validate-payment-method.ts # Validación de referencias polimórficas
 │   │   │   └── ...            # Un archivo por entidad
+│   │   ├── data/              # Funciones de datos cacheadas (unstable_cache)
+│   │   │   ├── dashboard.ts   # Calendar events + dashboard data cacheados
+│   │   │   └── invalidate.ts  # Invalidación de cache por usuario
+│   │   ├── types/             # Tipos compartidos (server actions + componentes)
+│   │   │   └── calendar.ts    # CalendarEvent interface
 │   │   ├── validations/       # Schemas Zod + tests
 │   │   ├── utils/
 │   │   │   ├── amortization.ts # Calculadora de amortización con IVA
 │   │   │   └── receipt-parser.ts # Parser de tickets OCR
 │   │   ├── ocr/               # Providers OCR (Tesseract, futuro Vision)
 │   │   ├── auth.ts            # Configuración NextAuth
+│   │   ├── auth-utils.ts      # getAuthUserId centralizado
 │   │   ├── prisma.ts          # Singleton Prisma Client
+│   │   ├── utils.ts           # cn(), formatCurrency()
 │   │   └── constants.ts       # Labels, catálogos
 │   └── test/
 │       └── setup.ts           # Setup de Vitest
+├── .ai/prompts/               # Prompts genéricos para agentes IA
 ├── CONVENTIONS.md             # Reglas de código y colaboración
 ├── DESIGN.md                  # Diseño de entidades y flujos
 ├── TECH_DECISIONS.md          # Decisiones técnicas
+├── IMPROVEMENTS.md            # Áreas de mejora con tracking
 └── CONTRIBUTING.md            # Guía para contribuir
 ```
 
