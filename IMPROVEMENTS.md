@@ -35,3 +35,24 @@ Registro de mejoras identificadas durante el análisis del proyecto. Se van tach
 
 - [x] **SVGs inline en dashboard** — 9 iconos SVG inline (~50 líneas) en `page.tsx`. Reemplazados por iconos de Lucide (ya era dependencia).
 - [x] **`fmt()` duplicado** — El formateador de moneda se definía en 14 archivos. Centralizado como `formatCurrency` en `src/lib/utils.ts`, importado con alias `fmt`.
+
+## Módulo de Ahorro
+
+- [x] **Meta/objetivo** — Campos `targetAmount`, `targetDate`, `completedAt` en SavingsFund. La dispersión respeta la meta: skip completados, cap al faltante, auto-completar al alcanzar.
+- [x] **Saldo no editable** — `accumulatedBalance` ya no es input en el formulario. Se muestra como solo lectura en edición. Se actualiza solo vía dispersiones y retiros.
+- [x] **Barra de progreso** — En la card de `/ahorro` cuando hay `targetAmount`. Badge "✓ Completado" cuando se alcanza.
+- [x] **Calendario** — Los ahorros generan eventos púrpura en los días de pago de su fuente de ingreso vinculada. Fondos completados no generan eventos.
+- [x] **Preview de porcentaje** — En el formulario, si es porcentaje, muestra "≈ $1,500 por dispersión de Nómina" basado en el ingreso vinculado.
+- [x] **Historial de movimientos** — Modelo `SavingsMovement` (DEPOSIT/WITHDRAWAL). Aportes se crean al dispersar (vinculados a Distribution), retiros manualmente. Vista en `/ahorro/[id]`.
+- [x] **Retiros parciales** — Acción `withdrawFromSavingsFund` con monto, nota opcional. Decrementa saldo, reabre fondo si baja de meta.
+- [x] **Fuente huérfana** — `incomeSourceId` nullable con `onDelete: SetNull`. Si se elimina la fuente, el fondo no queda huérfano.
+- [ ] **Categorización de fondos** — Tipos como "emergencia", "vacaciones", "retiro". Cosmético, baja prioridad.
+- [ ] **Multi-ingreso por fondo** — Vincular un fondo a más de una fuente de ingreso. Cambio de modelo grande.
+
+## Dispersiones
+
+- [x] **Filtrado por fuente de ingreso** — Gastos periódicos y préstamos se filtran por `incomeSourceId`. Solo aparecen los vinculados a la fuente que se dispersa, o los no vinculados (backward compatible).
+- [x] **Auto-resolución de incomeSourceId en gastos** — Al crear/editar gasto periódico: INCOME_SOURCE → directo, DEBIT_CARD → busca fuente con esa depositCard, CREDIT_CARD → selector manual.
+- [x] **incomeSourceId en préstamos** — Campo opcional. Si se vincula, solo aparece al dispersar esa fuente. Selector en formulario de préstamos.
+- [x] **Ahorros editables en dispersión** — El usuario puede ajustar montos o omitir ahorros individuales antes de confirmar. Totales se recalculan en tiempo real.
+- [ ] **Repensar sistema de dispersiones** — El modelo actual de vinculación ingreso→tarjeta→gastos tiene limitaciones. Considerar un rediseño más completo a futuro.

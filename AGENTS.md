@@ -37,3 +37,7 @@ FinanzApp es una app web open source de gestión de finanzas personales construi
 16. **Tipos compartidos**: Interfaces usadas por server actions y componentes van en `src/lib/types/`. No re-exportar tipos desde archivos `"use server"`.
 17. **Datos cacheados**: Funciones con `unstable_cache` van en `src/lib/data/`. Los archivos `"use server"` delegan a estas funciones pasando `userId` como argumento.
 18. **Productos en shopping**: Al agregar item con barcode sin productId, crear `Product` global (source: MANUAL). Productos sin barcode no se crean globalmente.
+19. **Dispersión filtra por incomeSourceId**: Gastos periódicos y préstamos tienen `incomeSourceId` opcional. Solo aparecen al dispersar esa fuente, o en todas si es null. No traer todos los gastos/préstamos del usuario.
+20. **Auto-resolución de incomeSourceId en gastos**: Al crear/editar `RecurringExpense`, resolver automáticamente: `INCOME_SOURCE` → directo, `DEBIT_CARD` → buscar fuente con esa `depositCard`, `CREDIT_CARD` → selector manual. Usar `resolveIncomeSourceId()` en `src/lib/actions/recurring-expense.ts`.
+21. **Ahorros con meta**: `SavingsFund` tiene `targetAmount`, `targetDate`, `completedAt`. La dispersión respeta la meta (skip completados, cap al faltante). `accumulatedBalance` no es editable por el usuario.
+22. **Movimientos de ahorro**: `SavingsMovement` registra DEPOSIT (automático al dispersar) y WITHDRAWAL (manual). Al revertir dispersión, se eliminan los DEPOSIT asociados.

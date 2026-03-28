@@ -42,6 +42,8 @@
 - cutOffDay: Int? (día de corte, opcional)
 - paymentDueDay: Int (día de vencimiento del pago)
 - remainingBalance
+- incomeSourceId: String? (fuente de ingreso de donde se paga, opcional, onDelete: SetNull)
+- Si tiene incomeSourceId, solo aparece al dispersar esa fuente. Si no, aparece en todas.
 
 ### RecurringExpense
 - id, userId, name, description
@@ -49,14 +51,27 @@
 - payDay: Int[] (días específicos de cobro; BIWEEKLY requiere 2, MONTHLY requiere 1)
 - paymentMethodType: `CREDIT_CARD` | `DEBIT_CARD` | `INCOME_SOURCE`
 - paymentMethodId (referencia polimórfica)
+- incomeSourceId: String? (auto-asignado según método de pago, onDelete: SetNull)
 - category: `HOUSING` | `UTILITIES` | `SUBSCRIPTIONS` | `INSURANCE` | `TRANSPORTATION` | `FOOD` | `EDUCATION` | `HEALTH` | `ENTERTAINMENT` | `PERSONAL` | `PETS` | `DONATIONS` | `OTHER`
+- Auto-resolución de incomeSourceId: INCOME_SOURCE → directo, DEBIT_CARD → busca fuente con esa depositCard, CREDIT_CARD → selector manual en formulario
 
 ### SavingsFund
 - id, userId, name
 - type: `FIXED_AMOUNT` | `PERCENTAGE`
-- value, frequency (default: MONTHLY), incomeSourceId, accumulatedBalance
+- value, frequency (default: MONTHLY), incomeSourceId? (nullable, onDelete: SetNull), accumulatedBalance
+- targetAmount: Decimal? (meta de ahorro, opcional)
+- targetDate: DateTime? (fecha límite, referencia visual)
+- completedAt: DateTime? (se marca automáticamente al alcanzar la meta)
 - Frecuencia aplica solo a FIXED_AMOUNT — al dispersar, se prorratea al equivalente por cobro
 - PERCENTAGE siempre se calcula sobre el monto del ingreso dispersado
+- Al dispersar: fondos completados se saltan, monto se capea al faltante de la meta
+- Relación: movements (SavingsMovement[])
+
+### SavingsMovement
+- id, savingsFundId, type: `DEPOSIT` | `WITHDRAWAL`, amount, note?, distributionId?
+- DEPOSIT se crea automáticamente al dispersar (vinculado a Distribution)
+- WITHDRAWAL se crea manualmente desde la página de detalle del fondo
+- Al revertir dispersión, los DEPOSIT asociados se eliminan
 
 ### Expense
 - id, userId, name, description
@@ -147,14 +162,23 @@
 
 1. Usuario selecciona fuente de ingreso recibida (ej: nómina quincenal)
 2. Sistema calcula cuántas veces al mes cobra (semanal=4, quincenal=2, mensual=1)
-3. Para cada gasto periódico: convierte a equivalente mensual y divide entre cobros al mes
-4. Agrupa gastos por tarjeta de crédito/débito → "bolsas" por tarjeta
-5. Incluye pago mensual de tarjetas de crédito (si configurado) como line item en la bolsa
-6. Prorratea préstamos por cobro (pago mensual ÷ cobros al mes), convirtiendo según frecuencia del préstamo
-7. Calcula ahorros vinculados: porcentaje del ingreso o monto fijo prorrateado según frecuencia del ahorro
-8. Muestra resumen: bolsas por tarjeta + préstamos + ahorros + sobrante
-8. Usuario confirma → se registra la dispersión y se actualizan saldos de ahorro
-9. Dispersiones se pueden revertir (revierte saldos de ahorro)
+3. **Filtra gastos periódicos** por `incomeSourceId`: solo los vinculados a esta fuente, o los no vinculados (backward compatible)
+4. Para cada gasto filtrado: convierte a equivalente mensual y divide entre cobros al mes
+5. Agrupa gastos por tarjeta de crédito/débito → "bolsas" por tarjeta
+6. Incluye pago mensual de tarjetas de crédito solo si la tarjeta ya tiene gastos en esta dispersión
+7. **Filtra préstamos** por `incomeSourceId`: solo los vinculados a esta fuente, o los no vinculados
+8. Prorratea préstamos por cobro (pago mensual ÷ cobros al mes), convirtiendo según frecuencia del préstamo
+9. Calcula ahorros vinculados: porcentaje del ingreso o monto fijo prorrateado según frecuencia del ahorro. Respeta meta (cap al faltante, skip completados)
+10. **Ahorros editables**: el usuario puede ajustar montos o omitir ahorros individuales antes de confirmar
+11. Muestra resumen: bolsas por tarjeta + préstamos + ahorros + sobrante
+12. Usuario confirma → se registra la dispersión, se actualizan saldos de ahorro, se crean movimientos DEPOSIT
+13. Dispersiones se pueden revertir (revierte saldos de ahorro, elimina movimientos DEPOSIT)
+
+### Vinculación automática de gastos a fuente de ingreso
+Al crear/editar un gasto periódico, `incomeSourceId` se resuelve automáticamente:
+- `INCOME_SOURCE` → el `paymentMethodId` es la fuente directamente
+- `DEBIT_CARD` → busca qué fuente de ingreso tiene esa tarjeta como `depositCard`
+- `CREDIT_CARD` → no se puede inferir, el usuario selecciona la fuente en el formulario
 
 ### Vista "Por bolsas"
 Cada tarjeta se muestra como una cajita con el total a apartar y el desglose de gastos que se pagan con ella. Esto permite saber cuánto dinero separar para pagar cada tarjeta cuando llegue su fecha de pago.
@@ -277,7 +301,8 @@ Funciona sin IA por defecto. Al configurar API key de OpenAI:
 | `/prestamos/[id]` | ✅ | Detalle con tabla de amortización y resumen |
 | `/gastos` | ✅ | CRUD gastos periódicos con método de pago, categorías y días de cobro |
 | `/gastos-diarios` | ✅ | CRUD gastos únicos con escaneo de tickets (OCR) |
-| `/ahorro` | ✅ | Gestión de apartados de ahorro (monto fijo o porcentaje) |
+| `/ahorro` | ✅ | Gestión de apartados de ahorro con meta, progreso y estado |
+| `/ahorro/[id]` | ✅ | Detalle del fondo: progreso, retiros parciales, historial de movimientos |
 | `/calendario` | ✅ | Vista calendario mensual/lista con eventos de todos los módulos |
 | `/dispersiones` | ✅ | Dispersión automática con prorrateo por cobro y agrupación por tarjeta |
 | `/compras` | ✅ | Historial de sesiones de compra |
