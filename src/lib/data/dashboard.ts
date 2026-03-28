@@ -10,11 +10,15 @@ function buildCalendarEvents(
   loans: any[],
   expenses: any[],
   dailyExpenses: any[],
+  savingsFunds: any[],
   year: number,
   month: number,
 ): CalendarEvent[] {
   const events: CalendarEvent[] = [];
   const daysInMonth = new Date(year, month, 0).getDate();
+
+  // Build map of income source pay days for savings events
+  const incomePayDays = new Map<string, number[]>();
 
   for (const src of incomeSources) {
     const amount = Number(src.amount);
@@ -24,15 +28,21 @@ function buildCalendarEvents(
     if (src.frequency === "ONE_TIME") {
       if (src.oneTimeDate) {
         const d = new Date(src.oneTimeDate);
-        if (d.getUTCFullYear() === year && d.getUTCMonth() + 1 === month) events.push(ev(d.getUTCDate()));
+        if (d.getUTCFullYear() === year && d.getUTCMonth() + 1 === month) {
+          const day = d.getUTCDate();
+          events.push(ev(day));
+          incomePayDays.set(src.id, [day]);
+        }
       }
       continue;
     }
     if (src.frequency === "WEEKLY") {
       const targetDay = src.payDay[0];
+      const days: number[] = [];
       for (let d = 1; d <= daysInMonth; d++) {
-        if (new Date(year, month - 1, d).getDay() === targetDay) events.push(ev(d));
+        if (new Date(year, month - 1, d).getDay() === targetDay) { events.push(ev(d)); days.push(d); }
       }
+      incomePayDays.set(src.id, days);
       continue;
     }
     const requiresMonth = ["BIMONTHLY", "QUARTERLY", "SEMIANNUAL", "ANNUAL"].includes(src.frequency);
@@ -40,10 +50,12 @@ function buildCalendarEvents(
       if (!src.payMonth.includes(month)) continue;
       const monthIndex = src.payMonth.indexOf(month);
       const day = src.payDay[monthIndex] ?? src.payDay[0];
-      if (day) events.push(ev(day));
+      if (day) { events.push(ev(day)); incomePayDays.set(src.id, [day]); }
       continue;
     }
-    for (const day of src.payDay) events.push(ev(day));
+    const days: number[] = [];
+    for (const day of src.payDay) { events.push(ev(day)); days.push(day); }
+    incomePayDays.set(src.id, days);
   }
 
   for (const card of cards) {
@@ -112,13 +124,33 @@ function buildCalendarEvents(
     events.push({ day: d.getUTCDate(), label: exp.name, type: "expense", amount: Number(exp.amount), detail: exp.description ?? "Gasto diario" });
   }
 
+  // Savings events — appear on the same days as their linked income source
+  for (const fund of savingsFunds) {
+    if (fund.completedAt || !fund.incomeSourceId) continue;
+    const target = fund.targetAmount ? Number(fund.targetAmount) : null;
+    const accumulated = Number(fund.accumulatedBalance);
+    if (target !== null && accumulated >= target) continue;
+
+    const days = incomePayDays.get(fund.incomeSourceId);
+    if (!days || days.length === 0) continue;
+
+    const value = Number(fund.value);
+    const detail = target
+      ? `${fmt(accumulated)} de ${fmt(target)}${fund.targetDate ? ` · Meta: ${new Date(fund.targetDate).toLocaleDateString("es-MX", { month: "short", year: "numeric" })}` : ""}`
+      : "Ahorro recurrente";
+
+    for (const day of days) {
+      events.push({ day, label: `🐷 ${fund.name}`, type: "savings" as const, amount: value, detail });
+    }
+  }
+
   return events.sort((a, b) => a.day - b.day);
 }
 
 export function getCachedCalendarEvents(userId: string, year: number, month: number) {
   return unstable_cache(
     async () => {
-      const [incomeSources, cards, loans, expenses, dailyExpenses] = await Promise.all([
+      const [incomeSources, cards, loans, expenses, dailyExpenses, savingsFunds] = await Promise.all([
         prisma.incomeSource.findMany({ where: { userId, active: true } }),
         prisma.card.findMany({ where: { userId, type: "CREDIT" } }),
         prisma.loan.findMany({ where: { userId } }),
@@ -126,8 +158,9 @@ export function getCachedCalendarEvents(userId: string, year: number, month: num
         prisma.expense.findMany({
           where: { userId, date: { gte: new Date(year, month - 1, 1), lt: new Date(year, month, 1) } },
         }),
+        prisma.savingsFund.findMany({ where: { userId, completedAt: null } }),
       ]);
-      return buildCalendarEvents(incomeSources, cards, loans, expenses, dailyExpenses, year, month);
+      return buildCalendarEvents(incomeSources, cards, loans, expenses, dailyExpenses, savingsFunds, year, month);
     },
     [`calendar-${userId}-${year}-${month}`],
     { tags: [`calendar-${userId}`], revalidate: 300 },

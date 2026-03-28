@@ -22,6 +22,7 @@ const EVENT_STYLES: Record<string, string> = {
   card_payment: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
   loan: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400",
   expense: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
+  savings: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400",
 };
 
 const EVENT_TYPE_LABELS: Record<string, string> = {
@@ -29,6 +30,7 @@ const EVENT_TYPE_LABELS: Record<string, string> = {
   card_payment: "Pago tarjeta",
   loan: "Préstamo",
   expense: "Gasto",
+  savings: "Ahorro",
 };
 
 export function UpcomingEvents({ events }: { events: Event[] }) {
