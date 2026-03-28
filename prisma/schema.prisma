@@ -159,6 +159,8 @@ model IncomeSource {
   user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   depositCard   Card?         @relation(fields: [depositCardId], references: [id])
   savingsFunds  SavingsFund[]
+  loans         Loan[]        @relation("LoanIncomeSource")
+  recurringExpenses RecurringExpense[] @relation("ExpenseIncomeSource")
   distributions Distribution[]
 
   @@index([userId, active])
@@ -215,10 +217,12 @@ model Loan {
   cutOffDay        Int?
   paymentDueDay    Int
   remainingBalance Decimal
+  incomeSourceId   String?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  incomeSource IncomeSource? @relation("LoanIncomeSource", fields: [incomeSourceId], references: [id], onDelete: SetNull)
 
   @@index([userId])
 }
@@ -235,11 +239,13 @@ model RecurringExpense {
   endDate           DateTime?
   paymentMethodType PaymentMethodType
   paymentMethodId   String
+  incomeSourceId    String?
   category          ExpenseCategory?
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  incomeSource IncomeSource? @relation("ExpenseIncomeSource", fields: [incomeSourceId], references: [id], onDelete: SetNull)
 
   @@index([userId])
 }
@@ -251,13 +257,37 @@ model SavingsFund {
   type               SavingsType
   value              Decimal
   frequency          Frequency   @default(MONTHLY)
-  incomeSourceId     String
+  incomeSourceId     String?
   accumulatedBalance Decimal     @default(0)
+  targetAmount       Decimal?
+  targetDate         DateTime?
+  completedAt        DateTime?
   createdAt          DateTime    @default(now())
   updatedAt          DateTime    @updatedAt
 
-  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  incomeSource IncomeSource @relation(fields: [incomeSourceId], references: [id])
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  incomeSource IncomeSource? @relation(fields: [incomeSourceId], references: [id], onDelete: SetNull)
+  movements    SavingsMovement[]
+
+  @@index([userId])
+}
+
+enum SavingsMovementType {
+  DEPOSIT
+  WITHDRAWAL
+}
+
+model SavingsMovement {
+  id             String              @id @default(cuid())
+  savingsFundId  String
+  type           SavingsMovementType
+  amount         Decimal
+  note           String?
+  distributionId String?
+  createdAt      DateTime            @default(now())
+
+  savingsFund  SavingsFund   @relation(fields: [savingsFundId], references: [id], onDelete: Cascade)
+  distribution Distribution? @relation(fields: [distributionId], references: [id], onDelete: SetNull)
 }
 
 model Distribution {
@@ -271,6 +301,7 @@ model Distribution {
   user         User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
   incomeSource IncomeSource          @relation(fields: [incomeSourceId], references: [id])
   details      DistributionDetail[]
+  savingsMovements SavingsMovement[]
 }
 
 model DistributionDetail {

@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { SAVINGS_TYPE_LABELS, FREQUENCY_LABELS } from "@/lib/constants";
 import { createSavingsFund, updateSavingsFund } from "@/lib/actions/savings-fund";
+import { formatCurrency as fmt } from "@/lib/utils";
 import type { SavingsType, Frequency } from "@prisma/client";
 
 const SAVINGS_FREQUENCIES: Frequency[] = [
@@ -23,6 +24,8 @@ const SAVINGS_FREQUENCIES: Frequency[] = [
 interface IncomeSourceOption {
   id: string;
   name: string;
+  amount: number;
+  frequency: string;
 }
 
 interface Props {
@@ -34,6 +37,9 @@ interface Props {
     frequency: Frequency;
     incomeSourceId: string;
     accumulatedBalance: number;
+    targetAmount: number | null;
+    targetDate: string | null;
+    completedAt: string | null;
   };
   incomeSources: IncomeSourceOption[];
 }
@@ -42,13 +48,22 @@ export function SavingsFundForm({ fund, incomeSources }: Props) {
   const router = useRouter();
   const [savingsType, setSavingsType] = useState<string>(fund?.type ?? "FIXED_AMOUNT");
   const [frequency, setFrequency] = useState<string>(fund?.frequency ?? "MONTHLY");
+  const [incomeSourceId, setIncomeSourceId] = useState<string>(fund?.incomeSourceId ?? "");
+  const [percentValue, setPercentValue] = useState<string>(fund?.type === "PERCENTAGE" ? fund.value.toString() : "");
 
   const action = fund ? updateSavingsFund.bind(null, fund.id) : createSavingsFund;
+
+  // Estimate for percentage preview
+  const selectedSource = incomeSources.find((s) => s.id === incomeSourceId);
+  const percentPreview = savingsType === "PERCENTAGE" && selectedSource && percentValue
+    ? selectedSource.amount * parseFloat(percentValue || "0") / 100
+    : null;
 
   return (
     <form action={action} className="space-y-4 max-w-md">
       <input type="hidden" name="type" value={savingsType} />
       <input type="hidden" name="frequency" value={frequency} />
+      <input type="hidden" name="incomeSourceId" value={incomeSourceId} />
 
       <div className="space-y-2">
         <Label htmlFor="name">Nombre</Label>
@@ -93,7 +108,13 @@ export function SavingsFundForm({ fund, incomeSources }: Props) {
           required
           defaultValue={fund?.value?.toString()}
           placeholder={savingsType === "PERCENTAGE" ? "10" : "0.00"}
+          onChange={savingsType === "PERCENTAGE" ? (e) => setPercentValue(e.target.value) : undefined}
         />
+        {percentPreview !== null && percentPreview > 0 && (
+          <p className="text-xs text-muted-foreground">
+            ≈ {fmt(percentPreview)} por dispersión de {selectedSource!.name}
+          </p>
+        )}
       </div>
 
       {savingsType === "FIXED_AMOUNT" && (
@@ -123,13 +144,15 @@ export function SavingsFundForm({ fund, incomeSources }: Props) {
           </p>
         ) : (
           <>
-            <Select name="incomeSourceId" defaultValue={fund?.incomeSourceId}>
+            <Select value={incomeSourceId} onValueChange={(v) => setIncomeSourceId(v ?? "")}>
               <SelectTrigger id="incomeSourceId">
                 <SelectValue placeholder="Selecciona" />
               </SelectTrigger>
               <SelectContent>
                 {incomeSources.map((src) => (
-                  <SelectItem key={src.id} value={src.id}>{src.name}</SelectItem>
+                  <SelectItem key={src.id} value={src.id}>
+                    {src.name} — {fmt(src.amount)}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -140,17 +163,45 @@ export function SavingsFundForm({ fund, incomeSources }: Props) {
         )}
       </div>
 
+      {/* Target fields */}
       <div className="space-y-2">
-        <Label htmlFor="accumulatedBalance">Saldo acumulado</Label>
+        <Label htmlFor="targetAmount">Meta de ahorro (opcional)</Label>
         <Input
-          id="accumulatedBalance"
-          name="accumulatedBalance"
+          id="targetAmount"
+          name="targetAmount"
           type="number"
           step="0.01"
-          defaultValue={fund?.accumulatedBalance?.toString() ?? "0"}
-          placeholder="0.00"
+          defaultValue={fund?.targetAmount?.toString() ?? ""}
+          placeholder="Ej: 4400"
         />
+        <p className="text-xs text-muted-foreground">
+          Al alcanzar esta cantidad, el fondo se marca como completado y deja de participar en dispersiones.
+        </p>
       </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="targetDate">Fecha límite (opcional)</Label>
+        <Input
+          id="targetDate"
+          name="targetDate"
+          type="date"
+          defaultValue={fund?.targetDate?.split("T")[0] ?? ""}
+        />
+        <p className="text-xs text-muted-foreground">
+          Referencia visual de cuándo quieres alcanzar la meta.
+        </p>
+      </div>
+
+      {/* Read-only accumulated balance in edit mode */}
+      {fund && (
+        <div className="space-y-1">
+          <p className="text-sm font-medium">Saldo acumulado</p>
+          <p className="text-lg font-semibold">{fmt(fund.accumulatedBalance)}</p>
+          <p className="text-xs text-muted-foreground">
+            Se actualiza automáticamente con cada dispersión.
+          </p>
+        </div>
+      )}
 
       <div className="flex gap-3">
         <Button type="submit" className="flex-1">

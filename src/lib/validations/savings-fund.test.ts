@@ -109,16 +109,71 @@ describe("savingsFundSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("defaults accumulated balance to 0", () => {
+  it("accepts fund with target amount", () => {
+    const result = savingsFundSchema.safeParse({
+      name: "Laptop",
+      type: "FIXED_AMOUNT",
+      value: 2200,
+      frequency: "BIWEEKLY",
+      incomeSourceId: "src-1",
+      targetAmount: 4400,
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.targetAmount).toBe(4400);
+    }
+  });
+
+  it("accepts fund with target date", () => {
+    const result = savingsFundSchema.safeParse({
+      name: "Vacaciones",
+      type: "FIXED_AMOUNT",
+      value: 1000,
+      incomeSourceId: "src-1",
+      targetDate: "2026-12-31",
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.targetDate).toBeInstanceOf(Date);
+    }
+  });
+
+  it("treats empty targetAmount as undefined", () => {
     const result = savingsFundSchema.safeParse({
       name: "Test",
       type: "FIXED_AMOUNT",
       value: 100,
       incomeSourceId: "src-1",
+      targetAmount: "",
     });
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data.accumulatedBalance).toBe(0);
+      expect(result.data.targetAmount).toBeUndefined();
     }
+  });
+
+  it("treats empty targetDate as undefined", () => {
+    const result = savingsFundSchema.safeParse({
+      name: "Test",
+      type: "FIXED_AMOUNT",
+      value: 100,
+      incomeSourceId: "src-1",
+      targetDate: "",
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.targetDate).toBeUndefined();
+    }
+  });
+
+  it("rejects negative target amount", () => {
+    const result = savingsFundSchema.safeParse({
+      name: "Test",
+      type: "FIXED_AMOUNT",
+      value: 100,
+      incomeSourceId: "src-1",
+      targetAmount: -500,
+    });
+    expect(result.success).toBe(false);
   });
 });

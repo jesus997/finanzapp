@@ -16,17 +16,29 @@ export default async function EditSavingsFundPage({
   if (!fund) notFound();
 
   const serialized = {
-    ...fund,
+    id: fund.id,
+    name: fund.name,
+    type: fund.type,
     value: Number(fund.value),
+    frequency: fund.frequency,
+    incomeSourceId: fund.incomeSourceId ?? "",
     accumulatedBalance: Number(fund.accumulatedBalance),
-    createdAt: fund.createdAt.toISOString(),
-    updatedAt: fund.updatedAt.toISOString(),
+    targetAmount: fund.targetAmount ? Number(fund.targetAmount) : null,
+    targetDate: fund.targetDate ? fund.targetDate.toISOString() : null,
+    completedAt: fund.completedAt ? fund.completedAt.toISOString() : null,
   };
+
+  const serializedSources = incomeSources.map((s) => ({
+    id: s.id,
+    name: s.name,
+    amount: Number(s.amount),
+    frequency: s.frequency,
+  }));
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Editar apartado de ahorro</h1>
-      <SavingsFundForm fund={serialized} incomeSources={incomeSources} />
+      <SavingsFundForm fund={serialized} incomeSources={serializedSources} />
     </div>
   );
 }
