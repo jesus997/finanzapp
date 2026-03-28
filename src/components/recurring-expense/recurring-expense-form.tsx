@@ -49,6 +49,7 @@ interface Props {
     paymentMethodType: PaymentMethodType;
     paymentMethodId: string;
     category: string | null;
+    incomeSourceId: string | null;
   };
   cards: CardOption[];
   incomeSources: IncomeSourceOption[];
@@ -236,6 +237,26 @@ export function RecurringExpenseForm({ expense, cards, incomeSources }: Props) {
           </Select>
         )}
       </div>
+
+      {/* Income source selector — only for credit card expenses */}
+      {methodType === "CREDIT_CARD" && incomeSources.length > 0 && (
+        <div className="space-y-2">
+          <Label htmlFor="incomeSourceId">¿De qué ingreso se paga esta tarjeta?</Label>
+          <Select name="incomeSourceId" defaultValue={expense?.incomeSourceId ?? ""}>
+            <SelectTrigger id="incomeSourceId">
+              <SelectValue placeholder="Todas las fuentes" />
+            </SelectTrigger>
+            <SelectContent>
+              {incomeSources.map((src) => (
+                <SelectItem key={src.id} value={src.id}>{src.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground">
+            Solo aparecerá al dispersar esa fuente. Si no seleccionas, aparece en todas.
+          </p>
+        </div>
+      )}
 
       <div className="space-y-2">
         <Label htmlFor="category">Categoría (opcional)</Label>

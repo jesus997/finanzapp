@@ -27,6 +27,7 @@ export default async function EditRecurringExpensePage({
     paymentMethodType: expense.paymentMethodType,
     paymentMethodId: expense.paymentMethodId,
     category: expense.category,
+    incomeSourceId: expense.incomeSourceId,
   };
 
   return (

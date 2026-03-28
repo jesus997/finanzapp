@@ -8,6 +8,30 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { invalidateUserCache } from "@/lib/data/invalidate";
 
+/**
+ * Auto-resolve incomeSourceId from payment method:
+ * - INCOME_SOURCE → the paymentMethodId IS the income source
+ * - DEBIT_CARD → find which income source has this card as depositCard
+ * - CREDIT_CARD → cannot infer, use explicit value from form
+ */
+async function resolveIncomeSourceId(
+  userId: string,
+  type: string,
+  paymentMethodId: string,
+  explicit?: string,
+): Promise<string | null> {
+  if (type === "INCOME_SOURCE") return paymentMethodId;
+  if (type === "DEBIT_CARD") {
+    const source = await prisma.incomeSource.findFirst({
+      where: { userId, depositCardId: paymentMethodId, active: true },
+      select: { id: true },
+    });
+    return source?.id ?? null;
+  }
+  // CREDIT_CARD: use explicit selection from form
+  return explicit ?? null;
+}
+
 export async function getRecurringExpenses() {
   const userId = await getAuthUserId();
   return prisma.recurringExpense.findMany({
@@ -41,8 +65,11 @@ export async function createRecurringExpense(formData: FormData) {
 
   await validatePaymentMethod(userId, parsed.data.paymentMethodType, parsed.data.paymentMethodId);
 
+  const { incomeSourceId: explicit, ...rest } = parsed.data;
+  const resolvedSourceId = await resolveIncomeSourceId(userId, rest.paymentMethodType, rest.paymentMethodId, explicit);
+
   await prisma.recurringExpense.create({
-    data: { ...parsed.data, userId },
+    data: { ...rest, incomeSourceId: resolvedSourceId, userId },
   });
 
   invalidateUserCache(userId);
@@ -61,9 +88,12 @@ export async function updateRecurringExpense(id: string, formData: FormData) {
 
   await validatePaymentMethod(userId, parsed.data.paymentMethodType, parsed.data.paymentMethodId);
 
+  const { incomeSourceId: explicit2, ...rest2 } = parsed.data;
+  const resolvedSourceId = await resolveIncomeSourceId(userId, rest2.paymentMethodType, rest2.paymentMethodId, explicit2);
+
   await prisma.recurringExpense.update({
     where: { id, userId },
-    data: parsed.data,
+    data: { ...rest2, incomeSourceId: resolvedSourceId },
   });
 
   invalidateUserCache(userId);
