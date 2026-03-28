@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getLoan } from "@/lib/actions/loan";
+import { getLoan, getLoanIncomeSourceOptions } from "@/lib/actions/loan";
 import { LoanForm } from "@/components/loan/loan-form";
 
 export default async function EditLoanPage({
@@ -8,7 +8,10 @@ export default async function EditLoanPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const loan = await getLoan(id);
+  const [loan, incomeSources] = await Promise.all([
+    getLoan(id),
+    getLoanIncomeSourceOptions(),
+  ]);
 
   if (!loan) notFound();
 
@@ -26,12 +29,13 @@ export default async function EditLoanPage({
     endDate: loan.endDate?.toISOString() ?? null,
     cutOffDay: loan.cutOffDay,
     paymentDueDay: loan.paymentDueDay,
+    incomeSourceId: loan.incomeSourceId,
   };
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Editar préstamo</h1>
-      <LoanForm loan={serialized} />
+      <LoanForm loan={serialized} incomeSources={incomeSources} />
     </div>
   );
 }

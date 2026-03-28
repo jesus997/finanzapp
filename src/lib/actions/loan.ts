@@ -12,12 +12,21 @@ export async function getLoans() {
   return prisma.loan.findMany({
     where: { userId },
     orderBy: { createdAt: "desc" },
+    include: { incomeSource: { select: { name: true } } },
   });
 }
 
 export async function getLoan(id: string) {
   const userId = await getAuthUserId();
   return prisma.loan.findFirst({ where: { id, userId } });
+}
+
+export async function getLoanIncomeSourceOptions() {
+  const userId = await getAuthUserId();
+  return prisma.incomeSource.findMany({
+    where: { userId, active: true },
+    select: { id: true, name: true },
+  });
 }
 
 export async function createLoan(formData: FormData) {
@@ -29,11 +38,11 @@ export async function createLoan(formData: FormData) {
     throw new Error("Datos inválidos");
   }
 
-  const { endDate, ...rest } = parsed.data;
+  const { endDate, incomeSourceId, ...rest } = parsed.data;
   const computedEndDate = endDate ?? estimateEndDate(rest.startDate, rest.remainingBalance, rest.paymentAmount, rest.paymentFrequency);
 
   await prisma.loan.create({
-    data: { ...rest, endDate: computedEndDate, userId },
+    data: { ...rest, endDate: computedEndDate, incomeSourceId: incomeSourceId ?? null, userId },
   });
 
   invalidateUserCache(userId);
@@ -50,12 +59,12 @@ export async function updateLoan(id: string, formData: FormData) {
     throw new Error("Datos inválidos");
   }
 
-  const { endDate, ...rest } = parsed.data;
+  const { endDate, incomeSourceId, ...rest } = parsed.data;
   const computedEndDate = endDate ?? estimateEndDate(rest.startDate, rest.remainingBalance, rest.paymentAmount, rest.paymentFrequency);
 
   await prisma.loan.update({
     where: { id, userId },
-    data: { ...rest, endDate: computedEndDate },
+    data: { ...rest, endDate: computedEndDate, incomeSourceId: incomeSourceId ?? null },
   });
 
   invalidateUserCache(userId);

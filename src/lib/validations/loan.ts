@@ -20,6 +20,10 @@ export const loanSchema = z
     ),
     paymentDueDay: z.coerce.number().int().min(1).max(31, "Día límite de pago entre 1 y 31"),
     remainingBalance: z.coerce.number().min(0, "El saldo no puede ser negativo"),
+    incomeSourceId: z.preprocess(
+      (v) => (v === "" || v === undefined || v === null ? undefined : v),
+      z.string().optional(),
+    ),
   })
   .refine((data) => !data.endDate || data.endDate > data.startDate, {
     message: "La fecha de fin debe ser posterior a la de inicio",

@@ -19,6 +19,11 @@ import type { LoanType, Frequency } from "@prisma/client";
 
 const DAYS_OF_MONTH = Array.from({ length: 31 }, (_, i) => i + 1);
 
+interface IncomeSourceOption {
+  id: string;
+  name: string;
+}
+
 interface Props {
   loan?: {
     id: string;
@@ -34,10 +39,12 @@ interface Props {
     cutOffDay: number | null;
     paymentDueDay: number;
     remainingBalance: number;
+    incomeSourceId: string | null;
   };
+  incomeSources?: IncomeSourceOption[];
 }
 
-export function LoanForm({ loan }: Props) {
+export function LoanForm({ loan, incomeSources = [] }: Props) {
   const router = useRouter();
   const [loanType, setLoanType] = useState<string>(loan?.type ?? "BANK");
   const [institution, setInstitution] = useState(loan?.institution ?? "");
@@ -217,6 +224,25 @@ export function LoanForm({ loan }: Props) {
           </Select>
         </div>
       </div>
+
+      {incomeSources.length > 0 && (
+        <div className="space-y-2">
+          <Label htmlFor="incomeSourceId">Fuente de ingreso (opcional)</Label>
+          <Select name="incomeSourceId" defaultValue={loan?.incomeSourceId ?? ""}>
+            <SelectTrigger id="incomeSourceId">
+              <SelectValue placeholder="Todas las fuentes" />
+            </SelectTrigger>
+            <SelectContent>
+              {incomeSources.map((src) => (
+                <SelectItem key={src.id} value={src.id}>{src.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground">
+            Si lo vinculas, este préstamo solo aparecerá al dispersar esa fuente de ingreso. Si no, aparece en todas.
+          </p>
+        </div>
+      )}
 
       <div className="flex gap-3">
         <Button type="submit" className="flex-1">
