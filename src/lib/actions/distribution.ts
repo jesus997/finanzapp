@@ -143,7 +143,7 @@ export async function calculateDistribution(incomeSourceId: string): Promise<Dis
   const totalAmount = Number(incomeSource.amount);
   const timesPerMonth = incomeTimesPerMonth(incomeSource.frequency);
 
-  const [expenses, cards, loans, savings] = await Promise.all([
+  const [allExpenses, cards, allLoans, savings] = await Promise.all([
     prisma.recurringExpense.findMany({ where: { userId } }),
     prisma.card.findMany({ where: { userId } }),
     prisma.loan.findMany({ where: { userId } }),
@@ -151,6 +151,12 @@ export async function calculateDistribution(incomeSourceId: string): Promise<Dis
   ]);
 
   const cardMap = new Map(cards.map((c) => [c.id, c]));
+
+  // Filter: only expenses linked to this income source, or unlinked (backward compatible)
+  const expenses = allExpenses.filter((exp) => !exp.incomeSourceId || exp.incomeSourceId === incomeSourceId);
+
+  // Filter: only loans linked to this income source, or unlinked (backward compatible)
+  const loans = allLoans.filter((loan) => !loan.incomeSourceId || loan.incomeSourceId === incomeSourceId);
 
   // Group expenses by card
   const groupMap = new Map<string, CardGroup>();
@@ -182,9 +188,10 @@ export async function calculateDistribution(incomeSourceId: string): Promise<Dis
     // Expenses paid from INCOME_SOURCE go ungrouped — skip for now
   }
 
-  // Add card monthlyPayment as a line item in the card group
+  // Add card monthlyPayment if the card already has expenses in this distribution
   for (const card of cards) {
     if (card.type !== "CREDIT" || !card.monthlyPayment) continue;
+    if (!groupMap.has(card.id)) continue;
     const payment = Number(card.monthlyPayment);
     if (payment <= 0) continue;
     const perPaycheck = round2(payment / timesPerMonth);
@@ -224,14 +231,31 @@ export async function calculateDistribution(incomeSourceId: string): Promise<Dis
   });
 
   // Savings linked to this income source
-  const savingsItems: SavingsLineItem[] = savings.map((fund) => {
+  const savingsItems: SavingsLineItem[] = [];
+  for (const fund of savings) {
+    // Skip completed funds
+    if (fund.completedAt) continue;
+    const accumulated = Number(fund.accumulatedBalance);
+    const target = fund.targetAmount ? Number(fund.targetAmount) : null;
+    if (target !== null && accumulated >= target) continue;
+
+    let amount: number;
     if (fund.type === "PERCENTAGE") {
-      return { id: fund.id, name: fund.name, amount: round2(totalAmount * Number(fund.value) / 100) };
+      amount = round2(totalAmount * Number(fund.value) / 100);
+    } else {
+      const savingsMonthly = monthlyEquivalent(Number(fund.value), fund.frequency);
+      amount = round2(savingsMonthly / timesPerMonth);
     }
-    // Fixed amount: prorate based on savings frequency vs income frequency
-    const savingsMonthly = monthlyEquivalent(Number(fund.value), fund.frequency);
-    return { id: fund.id, name: fund.name, amount: round2(savingsMonthly / timesPerMonth) };
-  });
+
+    // Cap to not exceed target
+    if (target !== null) {
+      amount = round2(Math.min(amount, target - accumulated));
+    }
+
+    if (amount > 0) {
+      savingsItems.push({ id: fund.id, name: fund.name, amount });
+    }
+  }
 
   const totalCards = cardGroups.reduce((s, g) => s + g.totalPerPaycheck, 0);
   const totalLoans = loanItems.reduce((s, l) => s + l.perPaycheck, 0);
@@ -268,7 +292,7 @@ export async function createDistribution(
   const totalAmount = Number(incomeSource.amount);
 
   await prisma.$transaction(async (tx) => {
-    await tx.distribution.create({
+    const dist = await tx.distribution.create({
       data: {
         userId,
         incomeSourceId,
@@ -285,13 +309,28 @@ export async function createDistribution(
       },
     });
 
-    // Update savings fund balances
+    // Update savings fund balances and record movements
     for (const item of items) {
       if (item.destinationType === "savings") {
-        await tx.savingsFund.update({
+        const fund = await tx.savingsFund.update({
           where: { id: item.destinationId },
           data: { accumulatedBalance: { increment: item.amount } },
         });
+        await tx.savingsMovement.create({
+          data: {
+            savingsFundId: item.destinationId,
+            type: "DEPOSIT",
+            amount: item.amount,
+            distributionId: dist.id,
+          },
+        });
+        // Auto-complete if target reached
+        if (fund.targetAmount && Number(fund.accumulatedBalance) >= Number(fund.targetAmount)) {
+          await tx.savingsFund.update({
+            where: { id: fund.id },
+            data: { completedAt: new Date() },
+          });
+        }
       }
     }
   });
@@ -314,12 +353,22 @@ export async function deleteDistribution(id: string) {
   if (!distribution) throw new Error("Dispersión no encontrada");
 
   await prisma.$transaction(async (tx) => {
+    // Delete deposit movements from this distribution
+    await tx.savingsMovement.deleteMany({ where: { distributionId: id } });
+
     for (const detail of distribution.details) {
       if (detail.destinationType === "savings") {
-        await tx.savingsFund.update({
+        const fund = await tx.savingsFund.update({
           where: { id: detail.destinationId },
           data: { accumulatedBalance: { decrement: Number(detail.amount) } },
         });
+        // Reopen if balance dropped below target
+        if (fund.completedAt && fund.targetAmount && Number(fund.accumulatedBalance) < Number(fund.targetAmount)) {
+          await tx.savingsFund.update({
+            where: { id: fund.id },
+            data: { completedAt: null },
+          });
+        }
       }
     }
 
