@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -33,14 +34,39 @@ export function NewDistributionForm({ incomeSources }: Props) {
   const [sourceId, setSourceId] = useState("");
   const [preview, setPreview] = useState<DistributionPreview | null>(null);
   const [loading, setLoading] = useState(false);
+  // Savings overrides: fundId -> amount (null = skipped)
+  const [savingsOverrides, setSavingsOverrides] = useState<Record<string, number | null>>({});
 
   const handleCalculate = async () => {
     if (!sourceId) return;
     setLoading(true);
     const result = await calculateDistribution(sourceId);
     setPreview(result);
+    setSavingsOverrides({});
     setLoading(false);
   };
+
+  // Effective savings with overrides applied
+  const effectiveSavings = useMemo(() => {
+    if (!preview) return [];
+    return preview.savings.map((fund) => {
+      const override = savingsOverrides[fund.id];
+      if (override === null) return { ...fund, amount: 0, skipped: true };
+      if (override !== undefined) return { ...fund, amount: override, skipped: false };
+      return { ...fund, skipped: false };
+    });
+  }, [preview, savingsOverrides]);
+
+  // Recalculate totals with overrides
+  const totals = useMemo(() => {
+    if (!preview) return { totalAllocated: 0, remaining: 0 };
+    const totalCards = preview.cardGroups.reduce((s, g) => s + g.totalPerPaycheck, 0);
+    const totalLoans = preview.loans.reduce((s, l) => s + l.perPaycheck, 0);
+    const totalSavings = effectiveSavings.reduce((s, f) => s + f.amount, 0);
+    const totalAllocated = Math.round((totalCards + totalLoans + totalSavings) * 100) / 100;
+    const remaining = Math.round((preview.totalAmount - totalAllocated) * 100) / 100;
+    return { totalAllocated, remaining };
+  }, [preview, effectiveSavings]);
 
   const handleConfirm = async () => {
     if (!preview) return;
@@ -48,25 +74,40 @@ export function NewDistributionForm({ incomeSources }: Props) {
 
     const items: { destinationType: string; destinationId: string; amount: number; groupId?: string }[] = [];
 
-    // Each expense individually, grouped by card
     for (const group of preview.cardGroups) {
       for (const exp of group.expenses) {
         items.push({ destinationType: "expense", destinationId: exp.id, amount: exp.perPaycheck, groupId: group.cardId });
       }
     }
-    // Loans
     for (const loan of preview.loans) {
       items.push({ destinationType: "loan", destinationId: loan.id, amount: loan.perPaycheck });
     }
-    // Savings
-    for (const fund of preview.savings) {
-      items.push({ destinationType: "savings", destinationId: fund.id, amount: fund.amount });
+    for (const fund of effectiveSavings) {
+      if (!fund.skipped && fund.amount > 0) {
+        items.push({ destinationType: "savings", destinationId: fund.id, amount: fund.amount });
+      }
     }
 
     await createDistribution(preview.incomeSourceId, items);
   };
 
-  const hasItems = preview && (preview.cardGroups.length > 0 || preview.loans.length > 0 || preview.savings.length > 0);
+  const hasItems = preview && (preview.cardGroups.length > 0 || preview.loans.length > 0 || effectiveSavings.some((f) => !f.skipped && f.amount > 0));
+
+  const toggleSkip = (fundId: string) => {
+    setSavingsOverrides((prev) => {
+      if (prev[fundId] === null) {
+        const { [fundId]: _, ...rest } = prev;
+        return rest;
+      }
+      return { ...prev, [fundId]: null };
+    });
+  };
+
+  const updateAmount = (fundId: string, value: string) => {
+    const num = parseFloat(value);
+    if (isNaN(num) || num < 0) return;
+    setSavingsOverrides((prev) => ({ ...prev, [fundId]: Math.round(num * 100) / 100 }));
+  };
 
   return (
     <div className="space-y-6 max-w-lg">
@@ -152,18 +193,50 @@ export function NewDistributionForm({ incomeSources }: Props) {
             </div>
           )}
 
-          {/* Savings */}
+          {/* Savings — editable */}
           {preview.savings.length > 0 && (
             <div className="space-y-2">
-              {preview.savings.map((fund) => (
-                <div key={fund.id} className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary" className="text-[0.65rem]">Ahorro</Badge>
-                    <span>{fund.name}</span>
+              {preview.savings.map((fund) => {
+                const effective = effectiveSavings.find((f) => f.id === fund.id)!;
+                const isSkipped = effective.skipped;
+                const isEdited = savingsOverrides[fund.id] !== undefined && savingsOverrides[fund.id] !== null;
+
+                return (
+                  <div key={fund.id} className={`rounded-lg border p-3 space-y-2 ${isSkipped ? "opacity-50" : ""}`}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className="text-[0.65rem]">Ahorro</Badge>
+                        <span className="text-sm">{fund.name}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => toggleSkip(fund.id)}
+                        className="text-xs text-muted-foreground hover:text-foreground"
+                      >
+                        {isSkipped ? "Incluir" : "Omitir"}
+                      </button>
+                    </div>
+                    {!isSkipped && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">$</span>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value={isEdited ? savingsOverrides[fund.id]! : fund.amount}
+                          onChange={(e) => updateAmount(fund.id, e.target.value)}
+                          className="h-8 w-28 text-sm"
+                        />
+                        {isEdited && (
+                          <span className="text-xs text-muted-foreground">
+                            (original: {fmt(fund.amount)})
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
-                  <span className="font-medium">{fmt(fund.amount)}</span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
 
@@ -171,17 +244,17 @@ export function NewDistributionForm({ incomeSources }: Props) {
           <div className="border-t pt-3 space-y-1">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Total a apartar</span>
-              <span className="font-medium">{fmt(preview.totalAllocated)}</span>
+              <span className="font-medium">{fmt(totals.totalAllocated)}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Disponible</span>
-              <span className={`font-bold ${preview.remaining < 0 ? "text-destructive" : "text-green-600"}`}>
-                {fmt(preview.remaining)}
+              <span className={`font-bold ${totals.remaining < 0 ? "text-destructive" : "text-green-600"}`}>
+                {fmt(totals.remaining)}
               </span>
             </div>
           </div>
 
-          {preview.remaining < 0 && (
+          {totals.remaining < 0 && (
             <p className="text-xs text-destructive">
               ⚠️ Los compromisos superan el monto del ingreso.
             </p>
